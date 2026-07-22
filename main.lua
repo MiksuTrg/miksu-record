@@ -1,1 +1,6721 @@
-local q=_G pcall(function()if getgenv then q=getgenv()end end)if q.__MIKSU_RECORDER_CLEANUP then pcall(q.__MIKSU_RECORDER_CLEANUP)end local c=game:GetService("Players")local r=game:GetService("RunService")local j=game:GetService("UserInputService")local u=game:GetService("HttpService")local M=game:GetService("CoreGui")local G=c.LocalPlayer local d=G:WaitForChild("PlayerGui")local z="MIKSU_TRG_RECORD"local Y=""local P=true local O=true local a=true local o=.004 local v=true local b=true local X=false local x=true local U=.001 local T=true local e=true local h=6 local V=.94 local t=1.1 local B=.045 local F=true local l=.0065 local D=.14 local J=true local w=.0085 local g=.0045 local A=.1 local f=.055 local H=.15 local E=true local m=.01 local i=.045 local L=.0085 local p=.03 local I=.055 local Q=.85 local y=7.5 local W=-5.5 local R=2 local k=8 local K=500000 local Z=16 local N=45 local S=5.3311891555786 local s=.09 local C=.02 local n=.15 local qN=.07 local cN=.1 local rN=.55 local jN=.025 local uN=18 local MN=.12 local GN=1.12 local dN=.006 local zN=.18 local YN=10 local PN=.35 local ON=10 local aN=80 local oN=9 local vN=2.5 local bN=math.max(5,math.floor(vN/o))local XN local xN local UN local TN local eN local hN local VN local tN local BN local FN local lN local DN local JN local wN local gN={}local AN=1 local fN=nil local HN=true local EN=12 local mN=.46 local iN=.35 local LN=false local pN=nil local IN=0 local QN=6 local yN=.42 local WN=1.25 local RN=8 CP_MARKER_LABEL_MAX_DISTANCE=45 CP_MARKER_VISIBLE_DISTANCE=70 CP_MARKER_CULL_INTERVAL=.35 local kN={}local KN={}local ZN=false local NN=false local SN=false local sN=0 local CN=false local nN=0 local q6=Z local c6=Z local r6=nil local j6={}local u6=nil local M6=0 local G6=nil local d6=nil local z6=""local Y6=nil local P6=nil local function O6()pcall(function()Y6=Y6 or j.MouseBehavior P6=P6 or j.MouseIconEnabled j.MouseBehavior=Enum.MouseBehavior.Default j.MouseIconEnabled=true end)end local function a6()pcall(function()if Y6~=nil then j.MouseBehavior=Y6 end if P6~=nil then j.MouseIconEnabled=P6 end end)Y6=nil P6=nil end local o6=nil local v6=false function hasEquippedToolSafe(q)q=q or G.Character if not q then return false end for q,c in ipairs(q:GetChildren())do if c:IsA("Tool")then z6=c.Name return true end end return false end function captureMapSpeedBeforePlayback()local q,c=getCharacter()if not c then return end o6=tonumber(c.WalkSpeed)or Z v6=hasEquippedToolSafe(q)end local b6 local X6 local x6 local U6 local T6 local e6 local h6 local V6 local t6 local B6 function addConnection(q)if q then table.insert(j6,q)end return q end function cleanup()pcall(function()if r6 then r6:Disconnect()r6=nil end end)for q,c in ipairs(j6)do pcall(function()c:Disconnect()end)end nN=nN+1 CN=false ZN=false NN=false pcall(function()if fN then fN:Destroy()fN=nil end local q=workspace:FindFirstChild("MIKSU_MERGE_DOTS")if q then q:Destroy()end local c=workspace:FindFirstChild("MIKSU_CP_MARKERS")if c then c:Destroy()end end)pcall(function()if XN then XN:Destroy()end end)end q.__MIKSU_RECORDER_CLEANUP=cleanup function roundNumber(q,c)c=c or 3 local r=10^c return math.floor(((tonumber(q)or 0))*r+.5)/r end function parseSpeedValue(q,c)q=tostring(q or c or Z)q=q:gsub(",",".")q=q:gsub("[^%d%.%-]","")local r=tonumber(q)or tonumber(c)or Z r=math.clamp(r,k,K)return roundNumber(r,1)end function setSyncBaseSpeed(q,c)local r=parseSpeedValue(q,c6 or q6 or Z)q6=r c6=r if c and tN then tN.Text=tostring(r)end return r end function trimText(q)q=tostring(q or"")q=q:gsub("^%s+","")q=q:gsub("%s+$","")return q end function cleanFileName(q)q=trimText(q)q=q:gsub("[^%w_%-]","_")if q==""then q="checkpoint"end return q end function vecToTable(q)return{x=roundNumber(q.X,9),y=roundNumber(q.Y,9);z=roundNumber(q.Z,9)}end function tableToVec(q)if type(q)~="table"then return Vector3.new(0,0,0)end return Vector3.new(tonumber(q.x)or 0,tonumber(q.y)or 0,tonumber(q.z)or 0)end function horizontalDistance(q,c)return(Vector3.new(q.X-c.X,0,q.Z-c.Z)).Magnitude end function deepCopy(q)if type(q)~="table"then return q end local c={}for q,r in pairs(q)do c[q]=deepCopy(r)end return c end function getCharacter()local q=G.Character if not q then q=G.CharacterAdded:Wait()end local c=q:FindFirstChildOfClass("Humanoid")local r=q:FindFirstChild("HumanoidRootPart")if not c then c=q:WaitForChild("Humanoid",5)end if not r then r=q:WaitForChild("HumanoidRootPart",5)end return q,c,r end function restoreCharacterControl(q)local c,r,j=getCharacter()local u=tonumber(q)or tonumber(o6)or tonumber(G6)or tonumber(r and r.WalkSpeed)or Z local M=hasEquippedToolSafe(c)if M then if tonumber(r and r.WalkSpeed)then u=math.max(u,tonumber(r.WalkSpeed))end if tonumber(d6)then u=math.max(u,tonumber(d6))end else u=tonumber(q)or tonumber(o6)or tonumber(G6)or Z end u=math.clamp(u,k,K)local function G()c,r,j=getCharacter()local q=hasEquippedToolSafe(c)if r then pcall(function()r.AutoRotate=true r.PlatformStand=false r.Sit=false if q then if((tonumber(r.WalkSpeed)or 0))<u-.1 then r.WalkSpeed=u end else r.WalkSpeed=u end r:Move(Vector3.new(0,0,0),true)r:ChangeState(Enum.HumanoidStateType.Running)end)end if j then pcall(function()j.AssemblyAngularVelocity=Vector3.new(0,0,0)end)end end G()task.delay(.05,G)task.delay(.15,G)if M then task.delay(.35,G)end end function getEquippedToolName(q)q=q or G.Character if not q then return""end for q,c in ipairs(q:GetChildren())do if c:IsA("Tool")then return c.Name end end return""end function getHumanoidStateName(q)local c="Unknown"pcall(function()c=tostring(q:GetState())c=c:gsub("Enum.HumanoidStateType.","")end)return c end function isAirState(q)q=tostring(q or"")return q=="Jumping"or q=="Freefall"or q=="FallingDown"or q=="Climbing"or q=="Swimming"end function isMobileTouchDeviceSafe()local q,c=pcall(function()local q=game:GetService("UserInputService")return q.TouchEnabled and not q.KeyboardEnabled end)return q and c==true end function getHumanoidFloorMaterialNameSafe(q)local c,r=pcall(function()return q and q.FloorMaterial end)if c and r then return(tostring(r)):gsub("Enum.Material.","")end return"Unknown"end function isGroundFloorMaterialName(q)q=tostring(q or"")q=q:gsub("Enum.Material.","")return q~=""and(q~="Air"and(q~="Unknown"and q~="nil"))end function mobileDeltaFrameHasGroundData(q)if type(q)~="table"or type(q.ground)~="table"then return false end local c=q.ground local r=tostring(c.path or c.name or"")return r~=""end function mobileDeltaFrameHasGroundContact(q)if type(q)~="table"then return false end if q.grounded==true or q.isGrounded==true then return true end if isGroundFloorMaterialName(q.floorMaterial or q.floor or q.floorMat)then return true end local c=tostring(q.states or q.state or"")if mobileDeltaFrameHasGroundData(q)and((c==""or c=="Running"or c=="Landed"or c=="Walking"or c=="Standing"or c=="None"or c=="Unknown"))then return true end return false end function mobileDeltaVelocityConfirmedAir(q,c,r)if type(q)~="table"then return false end local j=math.max(1,tonumber(R)or 2)local u=((tonumber(r)or 0))>=((y or 7.5))local M=((tonumber(r)or 0))<=((W or-5.5))if not u and not M then return false end local G=0 for c=math.max(1,c-1),math.min(#q,c+1),1 do local r=q[c]if type(r)=="table"and not mobileDeltaFrameHasGroundContact(r)then local q=(tableToVec(r.city)).Y if u and q>=((y or 7.5))then G=G+1 elseif M and q<=((W or-5.5))then G=G+1 end end end return G>=j end function frameIsMobileDeltaSafe(q)if type(q)~="table"then return false end return q.mobileRecord==true or q.isMobileRecord==true or tostring(q.inputDevice or"")=="MobileDelta"or tostring(q.executorDevice or"")=="DeltaAndroid"end function framesLookMobileDeltaSafe(q)if type(q)~="table"or#q<=0 then return false end local c=0 local r=0 local j=0 local u=0 local M=0 local G=nil for q,d in ipairs(q)do if type(d)=="table"then j=j+1 if frameIsMobileDeltaSafe(d)then c=c+1 end if d.noShiftLock==true or tostring(d.rotationMode or"")=="AutoRotate"then r=r+1 end local q=tonumber(d.times)or tonumber(d.t)if q and G then local c=q-G if c>0 and c<.25 then u=u+c M=M+1 end end if q then G=q end end end if j<=0 then return false end if c>=math.max(1,math.floor(j*.1))then return true end local d=M>0 and(u/M)or 0 return r>=math.max(5,math.floor(j*.72))and d>=.018 end function mobileDeltaFixAirStateByVelocity(q)if not E or not framesLookMobileDeltaSafe(q)then return q or{}end local c=deepCopy(q or{})for q,r in ipairs(c)do if type(r)=="table"then local j=tostring(r.states or r.state or"")local u=(tableToVec(r.city)).Y local M=mobileDeltaFrameHasGroundContact(r)if j~="Climbing"and j~="Swimming"then if M then if j=="Jumping"or j=="Freefall"or j=="FallingDown"or r.jump==true then r.states="Running"r.jump=false end else local M=j=="Jumping"or j=="Freefall"or j=="FallingDown"local G=mobileDeltaVelocityConfirmedAir(c,q,u)if M or G then if u>=((y or 7.5))then r.states="Jumping"r.jump=true elseif u<=((W or-5.5))then r.states="Freefall"r.jump=false elseif M then if j=="FallingDown"then r.states="Freefall"end end end end end end end return c end function getSafeFullName(q)local c,r=pcall(function()return q:GetFullName()end)if c and r then return tostring(r)end return tostring(q and q.Name or"Unknown")end function normalizeGroundInfo(q)if type(q)~="table"then return nil end return{name=tostring(q.name or""),class=tostring(q.class or""),path=tostring(q.path or q.name or"");position={x=tonumber(q.position and q.position.x)or 0,y=tonumber(q.position and q.position.y)or 0,z=tonumber(q.position and q.position.z)or 0},hitPosition={x=tonumber(q.hitPosition and q.hitPosition.x)or 0,y=tonumber(q.hitPosition and q.hitPosition.y)or 0;z=tonumber(q.hitPosition and q.hitPosition.z)or 0}}end function getGroundInfo(q)if not q then return nil end local c=G.Character local r=RaycastParams.new()pcall(function()r.FilterType=Enum.RaycastFilterType.Blacklist end)pcall(function()r.FilterDescendantsInstances=c and{c}or{}end)pcall(function()r.IgnoreWater=true end)local j,u=pcall(function()return workspace:Raycast(q.Position,Vector3.new(0,-oN,0),r)end)if not j or not u or not u.Instance then return nil end local M=u.Instance local d=Vector3.new(0,0,0)pcall(function()d=M.Position end)return{name=tostring(M.Name);class=tostring(M.ClassName);path=getSafeFullName(M),position=vecToTable(d),hitPosition=vecToTable(u.Position)}end function groundKeyFromFrame(q)if type(q)~="table"or type(q.ground)~="table"then return nil end local c=tostring(q.ground.path or q.ground.name or"")if c==""then return nil end return c end local F6=2 function getFrameYVelocity(q)if type(q)~="table"then return 0 end local c=tableToVec(q.city)return c.Y or 0 end function isRollbackAirFrame(q)if type(q)~="table"then return false end local c=tostring(q.states or q.state or"")local r=getFrameYVelocity(q)local j=groundKeyFromFrame(q)~=nil if q.jump==true or c=="Jumping"or c=="Freefall"or c=="FallingDown"then return true end if not j and math.abs(r)>1.5 then return true end return false end function isRollbackGroundFrame(q)if type(q)~="table"then return false end if isRollbackAirFrame(q)then return false end local c=tostring(q.states or q.state or"")if c=="Climbing"or c=="Swimming"then return false end if groundKeyFromFrame(q)~=nil then return true end if c=="Running"or c=="Landed"then return true end return false end function findRollbackBeforeJumpIndex()local q=#kN if q<=2 then return nil,nil end local c=nil for q=q,1,-1 do if isRollbackAirFrame(kN[q])then c=q break end end if not c then return nil,nil end local r=c while r>1 and isRollbackAirFrame(kN[r-1])do r=r-1 end local j=nil for q=r-1,1,-1 do if isRollbackGroundFrame(kN[q])then j=q break end end if not j then return nil,nil end local u=math.max(1,j-F6)for q=u,j,1 do if isRollbackGroundFrame(kN[q])then return q,"sebelum_lompat"end end return j,"sebelum_lompat"end function formatTime(q)q=tonumber(q)or 0 local c=math.floor(q/60)local r=q-(c*60)return string.format("%02d:%05.2f",c,r)end function notify(q,c,r)q=tostring(q or"MIKSU")c=tostring(c or"")r=r or 2 warn("[MIKSU TRG Recorder] "..(q..(" - "..c)))if not eN then return end eN.Text=q..(" | "..c)eN.Visible=true task.delay(r,function()if eN and eN.Text==q..(" | "..c)then eN.Visible=false end end)end function clearMergeDots()pcall(function()if fN then fN:Destroy()fN=nil end local q=workspace:FindFirstChild("MIKSU_MERGE_DOTS")if q then q:Destroy()end end)end function getMergeDotFolder()if fN and fN.Parent then return fN end local q=workspace:FindFirstChild("MIKSU_MERGE_DOTS")if q then q:Destroy()end fN=Instance.new("Folder")fN.Name="MIKSU_MERGE_DOTS"fN.Parent=workspace return fN end function groundPositionForDot(q)local c=q+Vector3.new(0,8,0)local r=Vector3.new(0,-60,0)local j=RaycastParams.new()pcall(function()j.FilterType=Enum.RaycastFilterType.Blacklist j.FilterDescendantsInstances=G.Character and{G.Character}or{}j.IgnoreWater=true end)local u,M=pcall(function()return workspace:Raycast(c,r,j)end)if u and(M and M.Position)then return M.Position+Vector3.new(0,iN,0)end return q+Vector3.new(0,iN,0)end function makeBillboardLabel(q,c,r)local j=Instance.new("BillboardGui")j.Name="MIKSU_Label"j.Size=UDim2.fromOffset(105,26)j.StudsOffset=Vector3.new(0,1.7,0)j.AlwaysOnTop=false j.MaxDistance=CP_MARKER_LABEL_MAX_DISTANCE j.Parent=q local u=Instance.new("Frame")u.BackgroundColor3=Color3.fromRGB(20,20,25)u.BackgroundTransparency=.15 u.Size=UDim2.new(1,0,1,0)u.Parent=j pcall(function()local q=Instance.new("UICorner")q.CornerRadius=UDim.new(0,8)q.Parent=u local c=Instance.new("UIStroke")c.Color=r or Color3.fromRGB(255,230,60)c.Thickness=1 c.Transparency=.1 c.Parent=u end)local M=Instance.new("TextLabel")M.BackgroundTransparency=1 M.Text=tostring(c or"CP")M.TextColor3=r or Color3.fromRGB(255,230,60)M.Font=Enum.Font.GothamBold M.TextSize=9 M.TextStrokeTransparency=.25 M.Size=UDim2.new(1,-8,1,0)M.Position=UDim2.fromOffset(4,0)M.Parent=u return j end function createMarkerPart(q,c,r,j,u,M)local G=Instance.new("Part")G.Name=tostring(c or"MIKSU_MARK")G.Anchored=true G.CanCollide=false G.CanTouch=false G.Material=Enum.Material.Neon G.Color=j or Color3.fromRGB(255,230,60)G.Size=u or Vector3.new(yN,yN,yN)G.Shape=M or Enum.PartType.Ball G.CFrame=CFrame.new(r)pcall(function()G:SetAttribute("BaseTransparency",G.Transparency)end)G.Parent=q pcall(function()G.CanQuery=false end)return G end function createMergeDotPath(q,c,r,j)if not HN then return end if typeof(r)~="Vector3"then r=tableToVec(r)end if typeof(j)~="Vector3"then j=tableToVec(j)end if r.Magnitude<=0 or j.Magnitude<=0 then return end local u=getMergeDotFolder()local M=((j-r)).Magnitude local G=EN if M<1 then G=2 elseif M>30 then G=18 end local d=nil local z=nil for c=1,G,1 do local M=c/G local Y=r:Lerp(j,M)local P=groundPositionForDot(Y)local O=((c==1 or c==G))and 1.35 or 1 local a=createMarkerPart(u,"JOIN_DOT_CP_"..(tostring(q)..("_"..tostring(c))),P,Color3.fromRGB(255,230,60),Vector3.new(mN*O,mN*O,mN*O),Enum.PartType.Ball)if not d then d=a end z=a end if z then makeBillboardLabel(z,"SAMBUNG CP "..(tostring(q)..("\n"..tostring(c or"checkpoint"))),Color3.fromRGB(255,230,60))end if d and(z and d~=z)then pcall(function()local q=Instance.new("Attachment")q.Name="MIKSU_BEAM_A"q.Parent=d local c=Instance.new("Attachment")c.Name="MIKSU_BEAM_B"c.Parent=z local r=Instance.new("Beam")r.Name="MIKSU_JOIN_BEAM"r.Attachment0=q r.Attachment1=c r.Width0=.12 r.Width1=.12 r.FaceCamera=true r.LightEmission=1 r.Transparency=NumberSequence.new(.2)r.Color=ColorSequence.new(Color3.fromRGB(255,230,60))r.Parent=d end)end end function clearCheckpointMarkers()IN=IN+1 pcall(function()local q=workspace:FindFirstChild("MIKSU_CP_MARKERS")if q then q:Destroy()end end)end function getCheckpointMarkerFolder()local q=workspace:FindFirstChild("MIKSU_CP_MARKERS")if q then return q end local c=Instance.new("Folder")c.Name="MIKSU_CP_MARKERS"c.Parent=workspace return c end function getFramePosSafe(q)if type(q)~="table"then return nil end local c=tableToVec(q.position)if c.Magnitude<=0 then return nil end return c end function startCheckpointMarkerDistanceCuller(q)if not q then return end IN=IN+1 local c=IN task.spawn(function()local r=q while c==IN and(r and r.Parent)do local q,c,j=getCharacter()if j then local q=j.Position for c,r in ipairs(r:GetDescendants())do if r:IsA("BasePart")then local c=((r.Position-q)).Magnitude<=CP_MARKER_VISIBLE_DISTANCE r.Transparency=c and((tonumber(r:GetAttribute("BaseTransparency"))or 0))or 1 elseif r:IsA("Beam")then local c=r.Attachment0 local j=r.Attachment1 local u=c and c.WorldPosition local M=j and j.WorldPosition local G=false if u and M then local c=((u+M))*.5 G=((u-q)).Magnitude<=CP_MARKER_VISIBLE_DISTANCE or((M-q)).Magnitude<=CP_MARKER_VISIBLE_DISTANCE or((c-q)).Magnitude<=CP_MARKER_VISIBLE_DISTANCE end r.Enabled=G end end end task.wait(CP_MARKER_CULL_INTERVAL)end end)end function createCheckpointMarker(q,c)if not LN or not q or type(q.frames)~="table"or#q.frames<=0 then return end local r=getCheckpointMarkerFolder()local j=q.frames local u=tostring(q.name or("checkpoint_"..tostring(c)))local M=getFramePosSafe(j[1])local G=getFramePosSafe(j[#j])if not M or not G then return end local d=groundPositionForDot(M)+Vector3.new(0,WN,0)local z=groundPositionForDot(G)+Vector3.new(0,WN,0)local Y=createMarkerPart(r,"CP_"..(tostring(c).."_START"),d,Color3.fromRGB(70,255,130),Vector3.new(yN,yN,yN),Enum.PartType.Ball)makeBillboardLabel(Y,"CP "..(tostring(c)..(" START\n"..u)),Color3.fromRGB(70,255,130))local P=createMarkerPart(r,"CP_"..(tostring(c).."_END"),z,Color3.fromRGB(255,95,95),Vector3.new(yN,yN,yN),Enum.PartType.Ball)makeBillboardLabel(P,"CP "..(tostring(c).." END"),Color3.fromRGB(255,95,95))local O=math.min(RN,math.max(2,QN))for q=1,O,1 do local u=math.floor(1+((((#j-1))*((q-1)))/math.max(O-1,1)))local M=getFramePosSafe(j[u])if M then local j=groundPositionForDot(M)+Vector3.new(0,.2,0)local u=createMarkerPart(r,"CP_"..(tostring(c)..("_PATH_"..tostring(q))),j,Color3.fromRGB(80,170,255),Vector3.new(yN*.62,yN*.62,yN*.62),Enum.PartType.Ball)if q==math.ceil(O/2)then makeBillboardLabel(u,"PATH CP "..tostring(c),Color3.fromRGB(80,170,255))end end end end function refreshCheckpointMarkers()clearCheckpointMarkers()if not LN then return end local q=pN and tostring(pN)or nil local c={}for r,j in ipairs(gN or{})do if j and(not j.isMerged and(type(j.frames)=="table"and#j.frames>0))then local r=tostring(j.name or"")if not q or q==""or r==q then table.insert(c,j)end end end if#c<=0 then return end table.sort(c,function(q,c)return((q.order or 9999))<((c.order or 9999))end)for q,c in ipairs(c)do createCheckpointMarker(c,q)if q%2==0 then task.wait()end end startCheckpointMarkerDistanceCuller(workspace:FindFirstChild("MIKSU_CP_MARKERS"))end function updateCpMarkerToggleButton()if not wN then return end if LN then if pN then wN.Text="CP 1"else wN.Text="CP ON"end wN.BackgroundColor3=Color3.fromRGB(55,120,80)else wN.Text="CP OFF"wN.BackgroundColor3=Color3.fromRGB(55,55,70)end end function setCheckpointMarkerMode(q,c,r)LN=q==true if LN then pN=c and tostring(c)or nil task.defer(refreshCheckpointMarkers)else pN=nil clearCheckpointMarkers()end updateCpMarkerToggleButton()if not r then if LN then if pN then notify("CP Marker","ON hanya: "..tostring(pN),2)else notify("CP Marker","ON semua checkpoint",2)end else notify("CP Marker","OFF. Save jadi lebih ringan.",2)end end end function toggleCheckpointMarkersAll()if LN and not pN then setCheckpointMarkerMode(false,nil,false)else setCheckpointMarkerMode(true,nil,false)end end function toggleSingleCheckpointMarker(q)local c=tostring(q and q.name or"")if c==""then return end if LN and pN==c then setCheckpointMarkerMode(false,nil,false)else setCheckpointMarkerMode(true,c,false)end end function countMergeDots()local q=workspace:FindFirstChild("MIKSU_MERGE_DOTS")local c=0 if q then for q,r in ipairs(q:GetChildren())do if(tostring(r.Name)):find("JOIN_DOT_CP_")then c=c+1 end end end return c end function smoothStep(q)q=math.clamp(q,0,1)return((q*q)*q)*((q*((q*6-15))+10))end function lerpAngle(q,c,r)local j=c-q j=math.atan(math.sin(j),math.cos(j))return q+j*r end function detectNoShiftLockRecord(q,c)if not q or not c then return false end local r=game:GetService("UserInputService")local j=game:GetService("Players")local u=j.LocalPlayer local M=r.TouchEnabled and(not r.MouseEnabled and not r.KeyboardEnabled)if M then local c=false pcall(function()if u and u.DevEnableMouseLock then c=true end if q.CameraOffset and q.CameraOffset.Magnitude>.5 then c=true end end)return not c end local G=q.MoveDirection if G.Magnitude<.05 then return false end local d=c.CFrame.LookVector local z=Vector3.new(d.X,0,d.Z)local Y=Vector3.new(G.X,0,G.Z)if z.Magnitude<.05 or Y.Magnitude<.05 then return false end local P=z.Unit:Dot(Y.Unit)return P>.72 end function isNoShiftLockFrame(q)if type(q)~="table"then return false end return q.noShiftLock==true or q.rotationMode=="AutoRotate"end function safeFunc(q)return type(q)=="function"end function ensureFolder()if safeFunc(isfolder)and safeFunc(makefolder)then local q,c=pcall(function()return isfolder(z)end)if q and not c then pcall(function()makefolder(z)end)elseif not q then pcall(function()makefolder(z)end)end elseif safeFunc(makefolder)then pcall(function()makefolder(z)end)end end function decodeJSON(q)local c,r=pcall(function()return u:JSONDecode(q)end)if c then return r end return nil end function filePathForName(q)return z..("/"..(cleanFileName(q)..".json"))end function retimeFramesForExport(q)local c=basicNormalizeFrames(q)or q or{}local r={}local j=nil local u=nil local M=tonumber(U)or.001 for q,c in ipairs(c)do if type(c)=="table"then local q=deepCopy(c)local G=tonumber(q.times)or tonumber(q.t)or 0 if j==nil then j=G end local d=G-j if u~=nil and d<=u then d=u+M end q.times=roundNumber(d,9)q.t=q.times if q.walkSpeed==nil and q.ws~=nil then q.walkSpeed=q.ws end if q.ws==nil and q.walkSpeed~=nil then q.ws=q.walkSpeed end if type(q.city)~="table"then q.city={x=0,y=0,z=0}end if type(q.moveDirection)~="table"then q.moveDirection={x=0;y=0;z=0}end table.insert(r,q)u=q.times end end return r end function prepareRawExactFramesForSave(q)return retimeFramesForExport(q),0 end function getFrameHorizontalCitySpeedForTRG(q)local c=tableToVec(q and q.city)return(Vector3.new(c.X,0,c.Z)).Magnitude end function detectTRGBaseSpeed(q)local c={}local r={}for q,j in ipairs(q or{})do if type(j)=="table"then local q=tostring(j.states or j.state or"Running")local u=getFrameHorizontalCitySpeedForTRG(j)local M=tonumber(j.walkSpeed)or tonumber(j.ws)or 0 local G=math.max(u,M)if G>=k then table.insert(r,G)if q=="Running"or q=="Landed"then table.insert(c,G)end end end end local j=(#c>=3)and c or r if#j<=0 then return parseSpeedValue(c6 or q6 or Z,Z)end table.sort(j)local u=math.max(1,math.floor(#j*.35))local M=math.max(u,math.ceil(#j*.75))local G=0 local d=0 for q=u,M,1 do G=G+((tonumber(j[q])or 0))d=d+1 end local z=G/math.max(d,1)return math.clamp(roundNumber(z,1),k,K)end function autoMapIsGroundRunFrame(q)if type(q)~="table"then return false end local c=tostring(q.states or q.state or"Running")if c=="Jumping"or c=="Freefall"or c=="FallingDown"or c=="Climbing"or c=="Swimming"then return false end return c=="Running"or c=="Landed"or c=="RunningNoPhysics"or c=="Walking"or c=="None"or c=="Unknown"or c==""end function autoMapFlatVecFromTable(q)local c=tableToVec(q)return Vector3.new(c.X,0,c.Z)end function autoMapHorizontalCitySpeed(q)return(autoMapFlatVecFromTable(q and q.city)).Magnitude end function autoMapMoveMagnitude(q)return(autoMapFlatVecFromTable(q and q.moveDirection)).Magnitude end function autoMapFramePos(q)return tableToVec(q and q.position)end function autoMapPercentile(q,c)if type(q)~="table"or#q<=0 then return nil end table.sort(q)c=math.clamp(tonumber(c)or.5,0,1)local r=math.floor((1+((#q-1))*c)+.5)r=math.clamp(r,1,#q)return tonumber(q[r])end function autoMapAverageMiddle(q,c,r)if type(q)~="table"or#q<=0 then return nil end table.sort(q)local j=math.clamp(math.floor(1+((#q-1))*((c or.55))),1,#q)local u=math.clamp(math.ceil(1+((#q-1))*((r or.88))),j,#q)local M=0 local G=0 for c=j,u,1 do M=M+((tonumber(q[c])or 0))G=G+1 end if G<=0 then return nil end return M/G end function autoMapDetectNormalRunSpeed(q)local c={}local r={}local j={}for q,u in ipairs(q or{})do if autoMapIsGroundRunFrame(u)then local q=tonumber(u.walkSpeed)or tonumber(u.ws)or 0 local M=autoMapHorizontalCitySpeed(u)local G=autoMapMoveMagnitude(u)if G>=((B or.045))or M>=k then if q>=k then table.insert(c,q)table.insert(j,q)end if M>=k then table.insert(r,M)table.insert(j,M)end end end end local u=tonumber(h)or 6 local M=nil local G=nil if#c>=u then local q=autoMapPercentile(c,.5)local r=autoMapPercentile(c,.75)if q and r then M=math.max(q,r)end end if#r>=u then local q=autoMapPercentile(r,.5)or 0 local c=autoMapPercentile(r,.9)or q local j={}local M=math.max(k,c*1.08)for q,c in ipairs(r)do c=tonumber(c)or 0 if c>=k and c<=M then table.insert(j,c)end end if#j>=math.max(3,math.floor(u*.5))then G=autoMapAverageMiddle(j,.58,.88)or autoMapPercentile(j,.75)else G=autoMapPercentile(r,.7)end end local d=nil if M and G then d=math.max(M,G)else d=M or G end if not d and#j>0 then d=autoMapPercentile(j,.75)end if not d or d<k then d=parseSpeedValue(c6 or q6 or Z,Z)end return math.clamp(roundNumber(d,2),k,K)end function autoMapDirectionFromAround(q,c)local r=q and q[c]if type(r)~="table"then return Vector3.new(0,0,0)end local j=autoMapFlatVecFromTable(r.city)if j.Magnitude>.05 then return j.Unit end local u=autoMapFlatVecFromTable(r.moveDirection)if u.Magnitude>.05 then return u.Unit end local M=autoMapFramePos(r)local G=q[c+1]local d=q[c-1]if G then local q=autoMapFramePos(G)-M local c=Vector3.new(q.X,0,q.Z)if c.Magnitude>.01 then return c.Unit end end if d then local q=M-autoMapFramePos(d)local c=Vector3.new(q.X,0,q.Z)if c.Magnitude>.01 then return c.Unit end end return Vector3.new(0,0,0)end function autoMapApplyNormalRunSpeed(q,c)if not T or not e then return q,0,c end q=basicNormalizeFrames(q)or q or{}if type(q)~="table"or#q<=0 then return q,0,c end c=tonumber(c)or autoMapDetectNormalRunSpeed(q)c=math.clamp(tonumber(c)or Z,k,K)local r=0 local j=c*((tonumber(V)or.94))local u=c*((tonumber(t)or 1.1))for M,G in ipairs(q)do if autoMapIsGroundRunFrame(G)then local d=autoMapMoveMagnitude(G)local z=autoMapHorizontalCitySpeed(G)local Y=d>=((B or.045))or z>=(k*.45)if Y then local d=false if z<=.05 or z<j then d=true end if z>u then d=true end if d then local j=autoMapDirectionFromAround(q,M)if j.Magnitude>.05 then local q=tableToVec(G.city)local u=j.Unit*c G.city={x=roundNumber(u.X,9);y=roundNumber(q.Y,9),z=roundNumber(u.Z,9)}r=r+1 end end local Y=tonumber(G.walkSpeed)or tonumber(G.ws)or 0 if Y<j or Y>u then G.walkSpeed=roundNumber(c,9)G.ws=G.walkSpeed else G.walkSpeed=roundNumber(math.max(Y,c),9)G.ws=G.walkSpeed end end end end return q,r,c end function autoMapRetuneRunTimes(q,c)if not F then return q end q=q or{}if#q<=1 then return q end c=tonumber(c)or autoMapDetectNormalRunSpeed(q)c=math.max(tonumber(c)or Z,k)local r={}local j=0 for u,M in ipairs(q)do local G=deepCopy(M)if u==1 then j=0 else local G=r[#r]local d=((tonumber(M.times)or tonumber(M.t)or 0))-((tonumber(q[u-1].times)or tonumber(q[u-1].t)or 0))local z=d if autoMapIsGroundRunFrame(G)and autoMapIsGroundRunFrame(M)then local q=autoMapFramePos(G)local r=autoMapFramePos(M)local j=r-q local u=(Vector3.new(j.X,0,j.Z)).Magnitude local d=math.max(autoMapMoveMagnitude(G),autoMapMoveMagnitude(M))if u>.01 and d>=((B or.045))then local q=u/c local r=c*((tonumber(t)or 1.1))local j=u/math.max(r,1)if z<=0 then z=q elseif z<j then z=j elseif z>(q*1.18)then z=q end end end if z<=0 then z=tonumber(U)or.001 end local Y=tonumber(l)or.0065 local P=tonumber(D)or.14 z=math.max(z,Y)z=math.min(z,P)j=j+z end G.times=roundNumber(j,9)G.t=G.times table.insert(r,G)end return r end function autoMapCleanSpeedForSave(q)if not T then return q,0,nil end local c=autoMapDetectNormalRunSpeed(q)local r=0 q,r,c=autoMapApplyNormalRunSpeed(q,c)q=autoMapRetuneRunTimes(q,c)q,r=autoMapApplyNormalRunSpeed(q,c)return q,r or 0,c end function exportFrameForTRGRace(q)q=q or{}local c=tableToVec(q.position)local r=tonumber(q.rotation)or 0 local j=tableToVec(q.moveDirection)local u=tableToVec(q.city)local M=tostring(q.states or q.state or"Running")local G if v and b then G=tonumber(q.walkSpeed)or tonumber(q.ws)or Z else G=tonumber(q.__trgBaseSpeed)or tonumber(q.walkSpeed)or tonumber(q.ws)or Z end local d=tonumber(q.hipHeight)or S local z=mobileDeltaFrameHasGroundContact(q)local Y=(not z)and((q.jump==true or M=="Jumping"))if z and((M=="Jumping"or M=="Freefall"or M=="FallingDown"))then M="Running"elseif M=="FallingDown"then M="Freefall"end return{jump=Y==true,hipHeight=roundNumber(d,9),rotation=roundNumber(r,9),moveDirection={y=roundNumber(j.Y,9),x=roundNumber(j.X,9),z=roundNumber(j.Z,9)},city={y=roundNumber(u.Y,9),x=roundNumber(u.X,9);z=roundNumber(u.Z,9)},position={y=roundNumber(c.Y,9);x=roundNumber(c.X,9);z=roundNumber(c.Z,9)};times=roundNumber(q.times or q.t or 0,9),walkSpeed=roundNumber(G,9);tool=tostring(q.tool or"");states=M}end function buildTRGRacePayload(q,c)local r={}local j=retimeFramesForExport(c or{})local u=nil if not v then u=detectTRGBaseSpeed(j)end for q,c in ipairs(j)do local j=deepCopy(c)if not v then j.__trgBaseSpeed=u else j.__trgBaseSpeed=nil end r[q]=exportFrameForTRGRace(j)if q%5000==0 then task.wait()end end return r end function miksuJsonStringFast(q)local c,r=pcall(function()return u:JSONEncode(tostring(q or""))end)if c and r then return r end return"\"\""end function miksuJsonNumberFast(q)return tostring(tonumber(q)or 0)end function miksuPayloadFrameToJson(q)q=q or{}local c=q.moveDirection or{}local r=q.city or{}local j=q.position or{}return"{"..("\"jump\":"..((((q.jump==true)and"true"or"false"))..(",\"hipHeight\":"..(miksuJsonNumberFast(q.hipHeight)..(",\"rotation\":"..(miksuJsonNumberFast(q.rotation)..(",\"moveDirection\":{"..("\"y\":"..(miksuJsonNumberFast(c.y)..(",\"x\":"..(miksuJsonNumberFast(c.x)..(",\"z\":"..(miksuJsonNumberFast(c.z)..("}"..(",\"city\":{"..("\"y\":"..(miksuJsonNumberFast(r.y)..(",\"x\":"..(miksuJsonNumberFast(r.x)..(",\"z\":"..(miksuJsonNumberFast(r.z)..("}"..(",\"position\":{"..("\"y\":"..(miksuJsonNumberFast(j.y)..(",\"x\":"..(miksuJsonNumberFast(j.x)..(",\"z\":"..(miksuJsonNumberFast(j.z)..("}"..(",\"times\":"..(miksuJsonNumberFast(q.times)..(",\"walkSpeed\":"..(miksuJsonNumberFast(q.walkSpeed)..(",\"tool\":"..(miksuJsonStringFast(q.tool)..(",\"states\":"..(miksuJsonStringFast(q.states).."}"))))))))))))))))))))))))))))))))))))))end function encodeMIKSUPayloadFast(q)local c={"["}for q,r in ipairs(q or{})do if q>1 then c[#c+1]=","end c[#c+1]=miksuPayloadFrameToJson(r)if q%1800==0 then task.wait()end end c[#c+1]="]"return table.concat(c)end function saveFramesToFile(q,c)ensureFolder()local r=filePathForName(q)local j=buildTRGRacePayload(q,c)local u=encodeMIKSUPayloadFast(j)if not u then return false,"JSON encode cepat gagal",r end if not safeFunc(writefile)then return false,"writefile tidak tersedia, data disimpan memory saja",r end local M,G=pcall(function()writefile(r,u)end)if M then return true,"tersimpan",r end return false,tostring(G or"writefile error"),r end function readTextFile(q)if not safeFunc(readfile)then return nil end local c,r=pcall(function()return readfile(q)end)if c then return r end return nil end function deleteFile(q)if not safeFunc(delfile)then return false end local c=pcall(function()delfile(q)end)return c end function listSavedFiles()if not safeFunc(listfiles)then return nil end ensureFolder()local q,c=pcall(function()return listfiles(z)end)if q and type(c)=="table"then return c end return nil end function basicNormalizeFrames(q)if type(q)~="table"then return nil end if type(q.frames)=="table"then q=q.frames elseif type(q.data)=="table"then if type(q.data.frames)=="table"then q=q.data.frames else q=q.data end end local c={}local function r(q)if type(q.position)=="table"then return{x=tonumber(q.position.x or q.position[1])or 0,y=tonumber(q.position.y or q.position[2])or 0,z=tonumber(q.position.z or q.position[3])or 0}end if type(q.pos)=="table"then return{x=tonumber(q.pos.x or q.pos[1])or 0;y=tonumber(q.pos.y or q.pos[2])or 0;z=tonumber(q.pos.z or q.pos[3])or 0}end if q.x~=nil or q.y~=nil or q.z~=nil then return{x=tonumber(q.x)or 0,y=tonumber(q.y)or 0,z=tonumber(q.z)or 0}end return nil end local function j(q)if q.rotation~=nil then return tonumber(q.rotation)or 0 end if q.rot~=nil then return tonumber(q.rot)or 0 end if q.r00~=nil and q.r20~=nil then local c=tonumber(q.r00)or 1 local r=tonumber(q.r20)or 0 return math.atan(-r,c)end return 0 end local function u(q)if type(q.moveDirection)=="table"then return{x=tonumber(q.moveDirection.x or q.moveDirection[1])or 0;y=tonumber(q.moveDirection.y or q.moveDirection[2])or 0;z=tonumber(q.moveDirection.z or q.moveDirection[3])or 0}end return{x=0,y=0,z=0}end local function M(q)if type(q.city)=="table"then return{x=tonumber(q.city.x or q.city[1])or 0,y=tonumber(q.city.y or q.city[2])or 0;z=tonumber(q.city.z or q.city[3])or 0}end if type(q.velocity)=="table"then return{x=tonumber(q.velocity.x or q.velocity[1])or 0,y=tonumber(q.velocity.y or q.velocity[2])or 0,z=tonumber(q.velocity.z or q.velocity[3])or 0}end return{x=0,y=0,z=0}end for q,G in ipairs(q)do if type(G)=="table"then local q=r(G)if q then local r=tonumber(G.times)or tonumber(G.t)or tonumber(G.time)or tonumber(G.timestamp)or 0 local d=tonumber(G.ws)or tonumber(G.walkSpeed)or Z local z=tostring(G.states or G.state or"Running")local Y={jump=G.jump==true or G.jumping==true,noShiftLock=G.noShiftLock==true or G.rotationMode=="AutoRotate";rotationMode=tostring(G.rotationMode or((G.noShiftLock==true)and"AutoRotate"or"ShiftLock"));mobileRecord=G.mobileRecord==true or G.isMobileRecord==true or tostring(G.inputDevice or"")=="MobileDelta",inputDevice=tostring(G.inputDevice or(G.mobileRecord==true and"MobileDelta"or"")),executorDevice=tostring(G.executorDevice or""),grounded=G.grounded==true or G.isGrounded==true;floorMaterial=tostring(G.floorMaterial or G.floor or G.floorMat or""),rawState=tostring(G.rawState or G.rawHumanoidState or""),hipHeight=tonumber(G.hipHeight)or 2;rotation=j(G),ground=normalizeGroundInfo(G.ground);moveDirection=u(G);city=M(G),position=q;times=r,t=r,walkSpeed=d,ws=d;v=tonumber(G.v)or nil,tool=tostring(G.tool or"");states=z;r00=tonumber(G.r00);r01=tonumber(G.r01),r02=tonumber(G.r02),r10=tonumber(G.r10),r11=tonumber(G.r11),r12=tonumber(G.r12);r20=tonumber(G.r20);r21=tonumber(G.r21),r22=tonumber(G.r22),seam=G.seam==true or G._seam==true,cutNext=G.cutNext==true or G._cutNext==true}table.insert(c,Y)end end end if#c<=0 then return nil end table.sort(c,function(q,c)return((tonumber(q.times)or 0))<((tonumber(c.times)or 0))end)return c end function framePos(q)return tableToVec(q.position)end function frameMovedEnough(q,c)if not q or not c then return false end local r=framePos(q)local j=framePos(c)local u=horizontalDistance(r,j)local M=math.abs(r.Y-j.Y)return u>=qN or M>=cN end function hasRotationChange(q,c)if not q or not c then return false end local r=tonumber(q.rotation)or 0 local j=tonumber(c.rotation)or 0 local u=math.abs(r-j)u=math.min(u,2*math.pi-u)return u>.12 end function shouldKeepFrame(q,c)local r=q[c]if not r then return false end if r.seam==true or r.cutNext==true then return true end if r.jump==true then return true end local j=q[c-1]local u=q[c+1]if hasRotationChange(j,r)or hasRotationChange(r,u)then return true end if isAirState(r.states)then local q=tostring(r.states)if q=="Jumping"or q=="Freefall"or q=="FallingDown"then return true end if q=="Climbing"or q=="Swimming"then return true end if frameMovedEnough(j,r)or frameMovedEnough(r,u)then return true end end if frameMovedEnough(j,r)then return true end if frameMovedEnough(r,u)then return true end return false end function sanitizeFrames(q,c)local r=basicNormalizeFrames(q)if not r then return nil end local j={}for q=1,#r,1 do if shouldKeepFrame(r,q)then local c=deepCopy(r[q])table.insert(j,c)end end local u={}local M=nil for q,c in ipairs(j)do if not M then table.insert(u,c)M=c else local q=c.seam==true or c.cutNext==true or frameMovedEnough(M,c)or c.jump==true or isAirState(c.states)if q then table.insert(u,c)M=c end end end if#u<=0 then return nil end if c then for q,c in ipairs(u)do c.times=roundNumber(((q-1))*o,4)c.t=c.times end end return u end function findCheckpointByName(q)q=tostring(q or"")for c,r in ipairs(gN)do if r.name==q then return r end end return nil end function parseCheckpointNumber(q)local c=(tostring(q or"")):match("^checkpoint_(%d+)$")if c then return tonumber(c)end return nil end function getNextDefaultName()local q=1 while findCheckpointByName("checkpoint_"..tostring(q))do q=q+1 end return"checkpoint_"..tostring(q)end function upsertCheckpoint(q,c,r,j)q=cleanFileName(q)c=basicNormalizeFrames(c)or c if type(c)~="table"or#c<=0 then return false end local u=findCheckpointByName(q)if u then u.frames=deepCopy(c)u.isMerged=r==true u.path=j or u.path else local u=parseCheckpointNumber(q)local M=u or AN table.insert(gN,{name=q;frames=deepCopy(c),isMerged=r==true,path=j or filePathForName(q),order=M})if M>=AN then AN=M+1 else AN=AN+1 end end if b6 then b6()end return true end function addCorner(q,c)local r=Instance.new("UICorner")r.CornerRadius=UDim.new(0,c or 8)r.Parent=q return r end function addStroke(q,c,r)local j=Instance.new("UIStroke")j.Color=c or Color3.fromRGB(80,80,95)j.Transparency=r or.25 j.Thickness=1 j.Parent=q return j end function makeLabel(q,c,r,j)local u=Instance.new("TextLabel")u.BackgroundTransparency=1 u.Text=c or""u.TextColor3=Color3.fromRGB(235,235,245)u.TextSize=r or 13 u.Font=j and Enum.Font.GothamBold or Enum.Font.Gotham u.TextXAlignment=Enum.TextXAlignment.Left u.TextYAlignment=Enum.TextYAlignment.Center u.Parent=q return u end function makeButton(q,c,r)local j=Instance.new("TextButton")j.AutoButtonColor=true j.BackgroundColor3=r or Color3.fromRGB(45,45,58)j.TextColor3=Color3.fromRGB(255,255,255)j.Text=c or"Button"j.TextSize=9 j.Font=Enum.Font.GothamBold j.Size=UDim2.new(1,0,0,20)j.Parent=q addCorner(j,6)addStroke(j,Color3.fromRGB(90,90,115),.45)return j end function makeTextBox(q,c,r)local j=Instance.new("TextBox")j.BackgroundColor3=Color3.fromRGB(24,24,32)j.TextColor3=Color3.fromRGB(255,255,255)j.PlaceholderColor3=Color3.fromRGB(140,140,150)j.PlaceholderText=c or""j.Text=r or""j.ClearTextOnFocus=false j.TextSize=9 j.Font=Enum.Font.Gotham j.Size=UDim2.new(1,0,0,20)j.Parent=q addCorner(j,6)addStroke(j,Color3.fromRGB(75,75,95),.45)return j end function addSection(q,c)local r=makeLabel(q,c,9,true)r.TextColor3=Color3.fromRGB(160,170,255)r.Size=UDim2.new(1,0,0,16)return r end function makeDraggable(q,c)local r=false local u local M c=c or q addConnection(c.InputBegan:Connect(function(c)if c.UserInputType==Enum.UserInputType.MouseButton1 or c.UserInputType==Enum.UserInputType.Touch then r=true u=c.Position M=q.Position addConnection(c.Changed:Connect(function()if c.UserInputState==Enum.UserInputState.End then r=false end end))end end))addConnection(j.InputChanged:Connect(function(c)if not r then return end if c.UserInputType~=Enum.UserInputType.MouseMovement and c.UserInputType~=Enum.UserInputType.Touch then return end local j=c.Position-u q.Position=UDim2.new(M.X.Scale,M.X.Offset+j.X,M.Y.Scale,M.Y.Offset+j.Y)end))end function bindButton(q,c)local r=false local function j()if r then return end r=true task.delay(.18,function()r=false end)c()end pcall(function()addConnection(q.Activated:Connect(j))end)pcall(function()addConnection(q.MouseButton1Click:Connect(j))end)end XN=Instance.new("ScreenGui")XN.Name="MIKSU TRG Recorder"XN.ResetOnSpawn=false XN.IgnoreGuiInset=true XN.ZIndexBehavior=Enum.ZIndexBehavior.Sibling pcall(function()if syn and syn.protect_gui then syn.protect_gui(XN)end end)local l6=pcall(function()XN.Parent=M end)if not l6 or not XN.Parent then XN.Parent=d end xN=Instance.new("Frame")xN.Name="MainWindow"xN.Size=UDim2.fromOffset(410,250)xN.Position=UDim2.new(.5,-205,.5,-125)xN.BackgroundColor3=Color3.fromRGB(18,18,25)xN.Parent=XN addCorner(xN,14)addStroke(xN,Color3.fromRGB(105,105,150),.25)local D6=Instance.new("Frame")D6.Name="Header"D6.Size=UDim2.new(1,0,0,30)D6.BackgroundColor3=Color3.fromRGB(28,28,40)D6.Parent=xN addCorner(D6,14)local J6=Instance.new("Frame")J6.BackgroundTransparency=1 J6.Size=UDim2.fromOffset(20,20)J6.Position=UDim2.fromOffset(6,5)J6.Parent=D6 addCorner(J6,10)local w6=Instance.new("ImageLabel")w6.Name="HeaderLogo"w6.BackgroundTransparency=1 w6.Image=Y w6.ScaleType=Enum.ScaleType.Fit w6.Size=UDim2.new(1,-4,1,-4)w6.Position=UDim2.fromOffset(2,2)w6.Parent=J6 local g6=Instance.new("TextLabel")g6.BackgroundTransparency=1 g6.Text="MIKSU TRG Recorder"g6.Font=Enum.Font.GothamBold g6.TextSize=11 g6.TextColor3=Color3.fromRGB(245,245,255)g6.TextXAlignment=Enum.TextXAlignment.Left g6.Size=UDim2.new(1,-112,1,0)g6.Position=UDim2.fromOffset(31,0)g6.Parent=D6 local A6=Instance.new("TextButton")A6.BackgroundColor3=Color3.fromRGB(45,45,60)A6.Text="\226\128\147"A6.Font=Enum.Font.GothamBold A6.TextSize=15 A6.TextColor3=Color3.fromRGB(255,255,255)A6.Size=UDim2.fromOffset(24,20)A6.Position=UDim2.new(1,-54,0,5)A6.Parent=D6 addCorner(A6,8)local f6=Instance.new("TextButton")f6.BackgroundColor3=Color3.fromRGB(180,45,65)f6.Text="X"f6.Font=Enum.Font.GothamBold f6.TextSize=10 f6.TextColor3=Color3.fromRGB(255,255,255)f6.Size=UDim2.fromOffset(24,20)f6.Position=UDim2.new(1,-27,0,5)f6.Parent=D6 addCorner(f6,8)makeDraggable(xN,D6)local H6=Instance.new("Frame")H6.BackgroundTransparency=1 H6.Size=UDim2.new(1,-10,1,-38)H6.Position=UDim2.fromOffset(5,35)H6.Parent=xN local E6=Instance.new("Frame")E6.BackgroundColor3=Color3.fromRGB(22,22,30)E6.Size=UDim2.new(0,138,1,0)E6.Parent=H6 addCorner(E6,12)addStroke(E6,Color3.fromRGB(70,70,95),.45)local m6=Instance.new("UIPadding")m6.PaddingTop=UDim.new(0,4)m6.PaddingBottom=UDim.new(0,4)m6.PaddingLeft=UDim.new(0,4)m6.PaddingRight=UDim.new(0,4)m6.Parent=E6 local i6=Instance.new("UIListLayout")i6.SortOrder=Enum.SortOrder.LayoutOrder i6.Padding=UDim.new(0,3)i6.Parent=E6 addSection(E6,"CONTROLS")local L6=makeButton(E6,"\226\151\143 RECORD",Color3.fromRGB(180,55,70))local p6=makeButton(E6,"SET SPEED",Color3.fromRGB(60,65,95))addSection(E6,"PLAYBACK")tN=makeTextBox(E6,"AUTO / isi speed","AUTO")local I6=makeButton(E6,"STOP PLAY",Color3.fromRGB(155,60,65))addSection(E6,"SAVE")VN=makeTextBox(E6,"name","")local Q6=makeButton(E6,"SAVE",Color3.fromRGB(55,110,75))local y6=Instance.new("Frame")y6.BackgroundColor3=Color3.fromRGB(22,22,30)y6.Size=UDim2.new(1,-144,1,0)y6.Position=UDim2.fromOffset(144,0)y6.Parent=H6 addCorner(y6,12)addStroke(y6,Color3.fromRGB(70,70,95),.45)local W6=Instance.new("UIPadding")W6.PaddingTop=UDim.new(0,4)W6.PaddingBottom=UDim.new(0,4)W6.PaddingLeft=UDim.new(0,4)W6.PaddingRight=UDim.new(0,4)W6.Parent=y6 local R6=makeLabel(y6,"FOLDER",12,true)R6.TextColor3=Color3.fromRGB(160,170,255)R6.Size=UDim2.new(1,0,0,14)R6.Position=UDim2.fromOffset(0,0)local k6=Instance.new("Frame")k6.BackgroundTransparency=1 k6.Size=UDim2.new(1,0,0,20)k6.Position=UDim2.fromOffset(0,16)k6.Parent=y6 local K6=Instance.new("UIListLayout")K6.FillDirection=Enum.FillDirection.Horizontal K6.SortOrder=Enum.SortOrder.LayoutOrder K6.Padding=UDim.new(0,3)K6.Parent=k6 local Z6=makeButton(k6,"Del All",Color3.fromRGB(145,55,60))Z6.Size=UDim2.new(.2,-4,1,0)local N6=makeButton(k6,"Load",Color3.fromRGB(55,80,130))N6.Size=UDim2.new(.2,-4,1,0)local S6=makeButton(k6,"Refresh",Color3.fromRGB(55,95,105))S6.Size=UDim2.new(.2,-4,1,0)local s6=makeButton(k6,"Merge",Color3.fromRGB(55,95,130))s6.Size=UDim2.new(.2,-4,1,0)wN=makeButton(k6,"CP OFF",Color3.fromRGB(55,55,70))wN.Size=UDim2.new(.2,-4,1,0)updateCpMarkerToggleButton()hN=makeTextBox(y6,"Search checkpoint...","")hN.Size=UDim2.new(1,0,0,20)hN.Position=UDim2.fromOffset(0,40)BN=Instance.new("ScrollingFrame")BN.Name="CheckpointList"BN.BackgroundColor3=Color3.fromRGB(17,17,24)BN.Size=UDim2.new(1,0,1,-64)BN.Position=UDim2.fromOffset(0,62)BN.ScrollBarThickness=4 BN.CanvasSize=UDim2.fromOffset(0,0)BN.Parent=y6 addCorner(BN,10)addStroke(BN,Color3.fromRGB(65,65,90),.55)local C6=Instance.new("UIPadding")C6.PaddingTop=UDim.new(0,4)C6.PaddingBottom=UDim.new(0,4)C6.PaddingLeft=UDim.new(0,4)C6.PaddingRight=UDim.new(0,4)C6.Parent=BN FN=Instance.new("UIListLayout")FN.SortOrder=Enum.SortOrder.LayoutOrder FN.Padding=UDim.new(0,4)FN.Parent=BN addConnection((FN:GetPropertyChangedSignal("AbsoluteContentSize")):Connect(function()BN.CanvasSize=UDim2.fromOffset(0,FN.AbsoluteContentSize.Y+14)end))eN=Instance.new("TextLabel")eN.Visible=false eN.BackgroundColor3=Color3.fromRGB(35,35,50)eN.TextColor3=Color3.fromRGB(255,255,255)eN.Font=Enum.Font.GothamBold eN.TextSize=9 eN.Size=UDim2.new(1,-10,0,18)eN.Position=UDim2.new(0,5,1,-21)eN.Parent=xN addCorner(eN,8)addStroke(eN,Color3.fromRGB(90,90,130),.35)UN=Instance.new("ImageButton")UN.Name="MiniLogo"UN.Visible=false UN.BackgroundTransparency=1 UN.Image=""UN.ScaleType=Enum.ScaleType.Fit UN.Size=UDim2.fromOffset(44,44)UN.Position=UDim2.fromOffset(25,170)UN.Parent=XN addCorner(UN,10)local n6=Instance.new("TextLabel")n6.Name="MiniLabel"n6.BackgroundTransparency=1 n6.Size=UDim2.new(1,0,1,0)n6.Text="MIKSU"n6.TextColor3=Color3.fromRGB(245,245,255)n6.TextSize=11 n6.Font=Enum.Font.GothamBold n6.Parent=UN local qa=Instance.new("Frame")qa.Name="MiniBg"qa.BackgroundColor3=Color3.fromRGB(28,28,40)qa.Size=UDim2.new(1,0,1,0)qa.ZIndex=-1 qa.Parent=UN addCorner(qa,10)addStroke(qa,Color3.fromRGB(105,105,150),.25)makeDraggable(UN,UN)TN=Instance.new("Frame")TN.Visible=false TN.BackgroundColor3=Color3.fromRGB(20,20,28)TN.Size=UDim2.fromOffset(154,50)TN.Position=UDim2.new(.5,-77,.12,0)TN.Parent=XN addCorner(TN,8)addStroke(TN,Color3.fromRGB(200,65,80),.15)local ca=Instance.new("Frame")ca.BackgroundColor3=Color3.fromRGB(130,35,50)ca.Size=UDim2.new(1,0,0,16)ca.Parent=TN addCorner(ca,8)makeDraggable(TN,ca)DN=Instance.new("TextLabel")DN.BackgroundTransparency=1 DN.Text="\226\151\143 REC"DN.TextColor3=Color3.fromRGB(255,255,255)DN.Font=Enum.Font.GothamBold DN.TextSize=9 DN.Size=UDim2.new(1,-12,1,0)DN.Position=UDim2.fromOffset(6,0)DN.Parent=ca lN=makeLabel(TN,"Timer: 00:00.00",13,true)lN.Size=UDim2.new(1,-20,0,0)lN.Position=UDim2.fromOffset(10,30)lN.Visible=false JN=makeLabel(TN,"Frames: 0",12,false)JN.Size=UDim2.new(1,-20,0,0)JN.Position=UDim2.fromOffset(10,30)JN.Visible=false local ra=Instance.new("Frame")ra.BackgroundTransparency=1 ra.Size=UDim2.new(1,-10,0,22)ra.Position=UDim2.fromOffset(5,23)ra.Parent=TN local ja=Instance.new("UIListLayout")ja.FillDirection=Enum.FillDirection.Horizontal ja.Padding=UDim.new(0,4)ja.Parent=ra local ua=makeButton(ra,"STOP",Color3.fromRGB(180,55,70))ua.Size=UDim2.new(.5,-2,1,0)local Ma=makeButton(ra,"ROLL",Color3.fromRGB(80,95,170))Ma.Size=UDim2.new(.5,-2,1,0)local Ga=-999 local da=0 local za=-999 local Ya=nil local Pa=-999 local Oa=""function recordIsAirStateText(q)q=tostring(q or"")return q=="Jumping"or q=="Freefall"or q=="FallingDown"end function getRecordToolNameFast(q)if not J then return getEquippedToolName(q)end local c=os.clock()if c-Pa>=H then Oa=getEquippedToolName(q)Pa=c end return Oa or""end function getRecordGroundInfoFast(q,c,r)if not J then return getGroundInfo(q)end local j=tonumber(c)or os.clock()local u=tostring(r or"")local M=recordIsAirStateText(u)if(not M)and((not Ya or(j-za)>=f))then Ya=getGroundInfo(q)za=j end if M then if(j-za)<=.14 then return Ya end return nil end return Ya end function getRecordDuration()if#kN<=0 then return 0 end return tonumber(kN[#kN].times)or 0 end function updateOverlay(q,c)local r=os.clock()if J and(ZN and not c)then if r-da<A then return end end da=r if lN then lN.Text="Timer: "..formatTime(q or getRecordDuration())end if JN then JN.Text="Frames: "..tostring(#kN)end end function makeFrame(q,c,r)local j=r.Position local u=r.AssemblyLinearVelocity local M=c.MoveDirection local d,z,Y=r.CFrame:ToOrientation()local P=getHumanoidStateName(c)local O=(Vector3.new(u.X,0,u.Z)).Magnitude local a=tonumber(c.WalkSpeed)or Z local o=isMobileTouchDeviceSafe()local v=detectNoShiftLockRecord(c,r)local b=v and"AutoRotate"or"ShiftLock"local X=P local x=getHumanoidFloorMaterialNameSafe(c)local U=isGroundFloorMaterialName(x)local T=false local e=tonumber(u.Y)or 0 if P=="Climbing"or P=="Swimming"then T=false elseif U and(P~="Jumping"and(P~="Freefall"and P~="FallingDown"))then T=false elseif P=="Jumping"or P=="Freefall"or P=="FallingDown"then if e>4 then P="Jumping"T=true else P="Freefall"T=false end elseif o and((not U)and e>=((y or 7.5)))then P="Jumping"T=true elseif o and((not U)and e<=((W or-5.5)))then P="Freefall"T=false elseif P=="FallingDown"then P="Freefall"T=false end local h,V,t,B,F,l,D,J,w,g,A,f=r.CFrame:GetComponents()return{jump=T==true;noShiftLock=v,rotationMode=b;mobileRecord=o==true;inputDevice=o and"MobileDelta"or"PC",executorDevice=o and"DeltaAndroid"or"Desktop",grounded=U==true;floorMaterial=x;rawState=X;hipHeight=roundNumber(tonumber(c.HipHeight)or S,9),rotation=roundNumber(z,9),moveDirection=vecToTable(M);city=vecToTable(u);position=vecToTable(j),times=roundNumber(q,9),walkSpeed=roundNumber(a,9);tool=getRecordToolNameFast(G.Character),states=P,ground=getRecordGroundInfoFast(r,q,P),t=roundNumber(q,9);x=roundNumber(h,9);y=roundNumber(V,9);z=roundNumber(t,9),r00=roundNumber(B,9);r01=roundNumber(F,9);r02=roundNumber(l,9);r10=roundNumber(D,9),r11=roundNumber(J,9),r12=roundNumber(w,9),r20=roundNumber(g,9);r21=roundNumber(A,9),r22=roundNumber(f,9),v=roundNumber(O,9),ws=roundNumber(a,9)}end local aa=.1 local oa=nil function isRealMovement(q,c,r)local j=c.Position local u=c.AssemblyLinearVelocity local M=q.MoveDirection local G=getHumanoidStateName(q)local d=horizontalDistance(j,r)local z=math.abs(j.Y-r.Y)local Y=(Vector3.new(u.X,0,u.Z)).Magnitude local P=math.abs(u.Y)local O,a,o=c.CFrame:ToOrientation()local v=false if oa then local q=math.abs(a-oa)q=math.min(q,2*math.pi-q)v=q>aa end oa=a local b=d>=s or z>=.03 local X=M.Magnitude>=C and b local x=Y>=n and b local U=G=="Jumping"or G=="Freefall"or G=="FallingDown"or G=="Climbing"or G=="Swimming"local T=U and((b or P>=.15 or M.Magnitude>=.01))return X or x or T or v end U6=function()if ZN then notify("Record","Recording sudah berjalan",2)return end local q,c,j=getCharacter()if not q or not c or not j then notify("Record","Character belum siap / belum spawn",3)return end O6()pcall(function()c.Jump=false c.PlatformStand=false c.AutoRotate=true c:ChangeState(Enum.HumanoidStateType.Running)end)pcall(function()local q=j.AssemblyLinearVelocity j.AssemblyLinearVelocity=Vector3.new(q.X,0,q.Z)j.AssemblyAngularVelocity=Vector3.new(0,0,0)end)G6=tonumber(c.WalkSpeed)or G6 d6=G6 z6=getEquippedToolName(q)local u=tonumber(c.WalkSpeed)or Z q6=u c6=u if tN then tN.Text=tostring(roundNumber(u,3))end nN=nN+1 CN=false ZN=true NN=false SN=false sN=sN+1 kN={}KN={}xN.Visible=false UN.Visible=false TN.Visible=true DN.Text="\226\151\143 REC LIVE"lN.Text="Timer: 00:00.00"JN.Text="Frames: 0"M6=os.clock()u6=j.Position oa=nil Ga=-999 da=0 za=-999 Ya=nil Pa=-999 Oa=getEquippedToolName(q)local M=getHumanoidStateName(c)local d=u local z=Oa or""local Y=M6 if r6 then r6:Disconnect()r6=nil end r6=r.Heartbeat:Connect(function(q)if not ZN then return end if NN then return end local c=G.Character if not c then return end local r=c:FindFirstChildOfClass("Humanoid")local j=c:FindFirstChild("HumanoidRootPart")if not r or not j then return end local u=tonumber(r.WalkSpeed)or 0 if u>0 then local q=getRecordToolNameFast(c)if q~=""then z6=q d6=math.max(tonumber(d6)or 0,u)elseif not d6 then d6=u end end local P=os.clock()-Y local O=getHumanoidStateName(r)local a=getRecordToolNameFast(c)or""local o=u local v=getHumanoidFloorMaterialNameSafe(r)local b=isGroundFloorMaterialName(v)local X=recordIsAirStateText(O)and not b local x=(O~=M)local U=(a~=z)local T=math.abs(o-d)>=.5 local e=x or U or T local h=X and g or w local V=P-Ga if not e and V<h then updateOverlay(P,false)return end if not e and not X then local q=isRealMovement(r,j,u6)if not q then if(P-Ga)<.5 then updateOverlay(P,false)return end end end local t=makeFrame(P,r,j)table.insert(kN,t)Ga=P u6=j.Position M=O d=o z=a updateOverlay(P,false)end)notify("Record","LIVE record aktif: Delta no false jump gundukan + anti speed spike.",3)end T6=function()SN=true sN=sN+1 NN=false if Ma then Ma.Text="ROLL"Ma.BackgroundColor3=Color3.fromRGB(80,95,170)end if not ZN then TN.Visible=false xN.Visible=true restoreCharacterControl()a6()return end ZN=false if r6 then r6:Disconnect()r6=nil end KN=deepCopy(kN)or{}TN.Visible=false xN.Visible=true restoreCharacterControl()a6()if#KN>0 then if VN and trimText(VN.Text)==""then VN.Text=getNextDefaultName()end notify("Stop","Record selesai. Frame bersih: "..tostring(#KN),3)else notify("Stop","Tidak ada gerakan yang terekam",3)end end function getFrameCFrame(q)local c=tableToVec(q.position)local r=tonumber(q.rotation)or 0 return CFrame.new(c)*CFrame.Angles(0,r,0)end function applyFrameMeta(q,c)if not q or not c then return end if not O then pcall(function()local r=tonumber(q.walkSpeed)if r and(r>0 and r>((tonumber(c.WalkSpeed)or 0)))then c.WalkSpeed=r end end)end if not a then pcall(function()c.HipHeight=tonumber(q.hipHeight)or c.HipHeight end)end if q.jump==true and not P then pcall(function()c.Jump=true c:ChangeState(Enum.HumanoidStateType.Jumping)end)end local r=tostring(q.states or"")pcall(function()if r=="Jumping"then c.Jump=true c:ChangeState(Enum.HumanoidStateType.Jumping)elseif r=="Freefall"then c:ChangeState(Enum.HumanoidStateType.Freefall)elseif r=="Climbing"then c:ChangeState(Enum.HumanoidStateType.Climbing)elseif r=="Swimming"then c:ChangeState(Enum.HumanoidStateType.Swimming)elseif r=="Running"then c:ChangeState(Enum.HumanoidStateType.Running)end end)end function equipFrameTool(q,c,r)if not q or not q.tool or q.tool==""then return end pcall(function()local j=tostring(q.tool)if getEquippedToolName(c)~=j then local q=c:FindFirstChild(j)if not q and G:FindFirstChild("Backpack")then q=G.Backpack:FindFirstChild(j)end if q and q:IsA("Tool")then r:EquipTool(q)end end end)end function applyFrameInstant(q)local c,r,j=getCharacter()if not r or not j or type(q)~="table"then return end local u=isNoShiftLockFrame(q)pcall(function()r.AutoRotate=false end)applyFrameMeta(q,r)equipFrameTool(q,c,r)local M=tableToVec(q.moveDirection)if M.Magnitude>.01 then pcall(function()r:Move(M.Unit,true)end)end pcall(function()j.AssemblyLinearVelocity=Vector3.new(0,0,0)j.AssemblyAngularVelocity=Vector3.new(0,0,0)end)pcall(function()local c=tableToVec(q.position)j.CFrame=getFrameCFrame(q)end)end function getPlaybackFrameHorizontalSpeed(q)if type(q)~="table"then return 0 end local c=tableToVec(q.city)local r=(Vector3.new(c.X,0,c.Z)).Magnitude if r>.05 then return r end local j=tonumber(q.walkSpeed)or tonumber(q.ws)or 0 if j>0 then return j end return 0 end function isIdlePlaybackSegment(q,c)if not q or not c then return false end local r=tostring(q.states or"")local j=tostring(c.states or"")if r=="Jumping"or r=="Freefall"or r=="FallingDown"or j=="Jumping"or j=="Freefall"or j=="FallingDown"or q.jump==true or c.jump==true then return false end local u=tableToVec(q.position)local M=tableToVec(c.position)local G=(Vector3.new(u.X-M.X,0,u.Z-M.Z)).Magnitude local d=math.abs(u.Y-M.Y)if G>.18 or d>.18 then return false end local z=tableToVec(q.city)local Y=tableToVec(c.city)if(Vector3.new(z.X,0,z.Z)).Magnitude>.6 then return false end if(Vector3.new(Y.X,0,Y.Z)).Magnitude>.6 then return false end return true end function getCurrentHorizontalSpeed()local q,c,r=getCharacter()if not r then return 0 end local j,u=pcall(function()return r.AssemblyLinearVelocity end)if j and u then local q=(Vector3.new(u.X,0,u.Z)).Magnitude if q>.2 then return q end end if c then return tonumber(c.WalkSpeed)or Z end return Z end function setSpeedFromCurrent()local q=getCurrentHorizontalSpeed()if q<=0 then notify("Speed","Speed tidak terdeteksi. Jalan dulu lalu pencet lagi.",3)return end q=setSyncBaseSpeed(q,true)notify("Speed","PLAYBACK SPEED diset: "..(tostring(q).." stud/s"),3)end function buildBridgeFramesBetween(q,c,r,j,u)local M={}if not q or not c then return M end r=tonumber(r)or rN j=tonumber(j)or aN u=tonumber(u)or YN local G=tableToVec(q.position)local d=tableToVec(c.position)local z=((d-G)).Magnitude if z>u then return M end if z<=r then return M end local Y=math.ceil(z/r)if Y<2 then Y=2 end if Y>j then Y=j end local P=tonumber(q.rotation)or 0 local O=tonumber(c.rotation)or P local a=tonumber(q.times)or tonumber(q.t)or 0 local v=tonumber(c.times)or tonumber(c.t)or(a+o*((Y+1)))if v<=a then v=a+o*((Y+1))end local b=d-G local X=Vector3.new(0,0,0)if b.Magnitude>.01 then X=b.Unit end local x=math.clamp(z/math.max(v-a,o),8,K)for q=1,Y,1 do local r=q/((Y+1))local j=smoothStep(r)local u=G:Lerp(d,j)local z=lerpAngle(P,O,j)local o=deepCopy(c)o.jump=false o.states="Running"o.position=vecToTable(u)o.rotation=roundNumber(z,5)o.moveDirection=vecToTable(X)o.city=vecToTable(X*x)o.ground=nil o.times=roundNumber(a+(((v-a))*r),9)o.t=o.times table.insert(M,o)end return M end function normalizePlaybackTimesKeepOriginal(q)local c={}local r=nil local j=0 for q,u in ipairs(q or{})do local M=deepCopy(u)local G=tonumber(M.times)or tonumber(M.t)or 0 if not r then r=G end local d=G-r if q==1 then d=0 elseif d<=j then local q=c[#c]local r=q and horizontalDistance(tableToVec(q.position),tableToVec(M.position))or 0 local u=math.max(getPlaybackFrameHorizontalSpeed(q),getPlaybackFrameHorizontalSpeed(M),Z)d=j+math.clamp(r/math.max(u,1),dN,zN)end M.times=roundNumber(d,9)M.t=M.times table.insert(c,M)j=d end return c end function preparePlaybackFrames(q)local c=sanitizeFrames(q,false)if not c or#c<=0 then return nil end local r={}local j=nil for q,c in ipairs(c)do local u=deepCopy(c)if not j then table.insert(r,u)j=u else local q=tableToVec(j.position)local c=tableToVec(u.position)local M=((c-q)).Magnitude local G=u.seam==true or j.cutNext==true or M>YN if G then u.seam=true table.insert(r,u)j=u elseif M<jN and(u.jump~=true and not isAirState(u.states))then else if M>(rN*2.4)then local q=buildBridgeFramesBetween(j,u,rN,aN,YN)for q,c in ipairs(q)do table.insert(r,c)j=c end end table.insert(r,u)j=u end end end if#r<=0 then return nil end return normalizePlaybackTimesKeepOriginal(r)end function setPlaybackButtonState(q)if not I6 then return end if q then I6.Text="STOP PLAY"I6.BackgroundColor3=Color3.fromRGB(190,70,75)else I6.Text="STOP PLAY"I6.BackgroundColor3=Color3.fromRGB(155,60,65)end end x6=function(q)if not CN then if q then notify("Playback","Tidak ada playback yang berjalan",2)end return end nN=nN+1 CN=false setPlaybackButtonState(false)local c,r,j=getCharacter()if j then pcall(function()j.AssemblyLinearVelocity=Vector3.new(0,0,0)j.AssemblyAngularVelocity=Vector3.new(0,0,0)end)end if r then pcall(function()r:Move(Vector3.new(0,0,0),true)end)end restoreCharacterControl()if q then notify("Playback","Playback distop",2)end end function getFrameStateText(q)return tostring((q and((q.states or q.state)))or"Running")end function isJumpStateText(q)q=tostring(q or"")return q=="Jumping"or q=="Freefall"or q=="FallingDown"end function getFrameVelocityVector(q)if type(q)~="table"then return Vector3.new(0,0,0)end local c=tableToVec(q.city)if c.Magnitude>.05 then return c end if type(q.velocity)=="table"then local c=tableToVec(q.velocity)if c.Magnitude>.05 then return c end end return Vector3.new(0,0,0)end function getFrameHorizontalVelocity(q)local c=getFrameVelocityVector(q)return(Vector3.new(c.X,0,c.Z)).Magnitude end function estimateRecordedPlaybackSpeedTRG(q)local c={}for r,j in ipairs(q or{})do local u=getFrameHorizontalVelocity(j)local M=tonumber(j.walkSpeed)or tonumber(j.ws)or 0 local G=math.max(u,M)if G>=k and G<=K then table.insert(c,G)end if r>1 then local u=q[r-1]local M=((tonumber(j.times)or tonumber(j.t)or 0))-((tonumber(u.times)or tonumber(u.t)or 0))if M>.002 then local q=horizontalDistance(tableToVec(u.position),tableToVec(j.position))local r=q/M if r>=k and r<=K then table.insert(c,r)end end end end if#c<=0 then return Z end table.sort(c)local r=math.floor(#c*.75)if r<1 then r=1 end return roundNumber(math.clamp(c[r]or Z,k,K),1)end function getPlaybackSpeedForFrames(q)local c=estimateRecordedPlaybackSpeedTRG(q)local r=tostring(tN and tN.Text or"AUTO")r=r:gsub(",",".")r=r:gsub("^%s+","")r=r:gsub("%s+$","")local j=tonumber(r)if j and j>0 then j=math.clamp(j,k,K)q6=j c6=c return roundNumber(j,1),true,c end q6=c c6=c if tN then tN.Text="AUTO"end return c,false,c end function findPreparedFrameAtTimeFast(q,c)if not q or#q<=1 then return 1 end local r=1 local j=#q-1 while r<=j do local u=math.floor(((r+j))/2)local M=q[u]local G=q[u+1]local d=tonumber(M.times)or tonumber(M.t)or 0 local z=tonumber(G.times)or tonumber(G.t)or d if c>=d and c<=z then return u elseif c<d then j=u-1 else r=u+1 end end if c<=0 then return 1 end return math.max(1,#q-1)end function applyFrameTRGStyle(q,c,r,j,u,M,G)if not q or not c or not j or not u then return end local d=tableToVec(q.position)local z=tableToVec(c.position)local Y=tonumber(q.rotation)or 0 local P=tonumber(c.rotation)or Y local O=smoothStep(math.clamp(r or 0,0,1))local v=d:Lerp(z,O)local b=lerpAngle(Y,P,O)local X=getFrameStateText(c)local x=getFrameStateText(q)local U=((x=="Freefall"or x=="FallingDown"or isJumpStateText(x)))and(not isJumpStateText(X)and(X~="Freefall"and X~="FallingDown"))if isIdlePlaybackSegment(q,c)then pcall(function()j.AutoRotate=false u.AssemblyLinearVelocity=Vector3.new(0,0,0)u.AssemblyAngularVelocity=Vector3.new(0,0,0)u.CFrame=CFrame.new(d)*CFrame.Angles(0,Y,0)j:ChangeState(Enum.HumanoidStateType.Standing)j.Sit=false j.PlatformStand=false end)return end local T=u.Position local e=select(2,u.CFrame:ToOrientation())local h=.45 if not isJumpStateText(X)and(X~="Freefall"and(X~="FallingDown"and(X~="Climbing"and X~="Swimming")))then h=.55 local q=((v-T)).Magnitude if q>3 then h=math.clamp(3/q,.15,.45)end elseif isJumpStateText(X)or X=="Freefall"or X=="FallingDown"then h=1.0 end local V=T:Lerp(v,h)local t=lerpAngle(e,b,.5)if RUN_PLAYBACK_VISUAL_GUARD and(not isJumpStateText(X)and(X~="Freefall"and(X~="FallingDown"and(X~="Climbing"and(X~="Swimming"and(c.seam~=true and q.cutNext~=true))))))then local q=((V-T)).Magnitude if q>((RUN_PLAYBACK_BIG_GAP_DISTANCE or 6.2))then local c=math.max(RUN_PLAYBACK_MAX_VISUAL_STEP or 4.25,1)V=T:Lerp(V,math.clamp(c/q,.05,1))end end local B=((tonumber(c.times)or tonumber(c.t)or 0))-((tonumber(q.times)or tonumber(q.t)or 0))if B<=.001 then B=o end local F=getFrameVelocityVector(c)if F.Magnitude<.05 then F=((z-d))/math.max(B,.001)end local l=math.clamp(tonumber(M)or 1,.05,25)F=F*l local D=((z-d))/math.max(B,.001)D=D*l local J=tableToVec(c.moveDirection)if J.Magnitude>.01 then pcall(function()j:Move(J.Unit,true)end)end pcall(function()local q=tonumber(G)or tonumber(c.walkSpeed)or Z j.WalkSpeed=math.clamp(q,k,K)j.Sit=false j.PlatformStand=false if not a then j.HipHeight=tonumber(c.hipHeight)or j.HipHeight end end)local w=(c.jump==true)or isJumpStateText(X)local g=not U and((X=="Freefall"or X=="FallingDown"or D.Y<-2 or F.Y<-2))local A=X=="Climbing"local f=X=="Swimming"pcall(function()j.AutoRotate=false u.CFrame=CFrame.new(V)*CFrame.Angles(0,t,0)local r=Vector3.new(F.X,0,F.Z)local M=math.max(getFrameHorizontalVelocity(q),getFrameHorizontalVelocity(c),tonumber(G)or Z,k)local d=math.max(M*GN,k)if r.Magnitude>d then r=r.Unit*d end local z=math.clamp(F.Y,-220,170)if w then local q=D.X local c=D.Z local r=math.sqrt(q*q+c*c)if r>d and r>0 then local j=d/r q,c=q*j,c*j end local M=math.clamp(D.Y,-500,300)u.AssemblyLinearVelocity=Vector3.new(q,M,c)u.AssemblyAngularVelocity=Vector3.new(0,0,0)if g then j.Jump=false j:ChangeState(Enum.HumanoidStateType.Freefall)else j.Jump=true j:ChangeState(Enum.HumanoidStateType.Jumping)end elseif A then u.AssemblyLinearVelocity=Vector3.new(r.X*.25,math.clamp(z,-50,50),r.Z*.25)u.AssemblyAngularVelocity=Vector3.new(0,0,0)j:ChangeState(Enum.HumanoidStateType.Climbing)elseif f then local q=U and math.max(0,D.Y)or z u.AssemblyLinearVelocity=Vector3.new(r.X,q,r.Z)u.AssemblyAngularVelocity=Vector3.new(0,0,0)j:ChangeState(Enum.HumanoidStateType.Swimming)else local q=((V-T))/math.max(B,.001)local c=Vector3.new(q.X,0,q.Z)if c.Magnitude>.1 then r=r:Lerp(c,.3)end u.AssemblyLinearVelocity=Vector3.new(r.X,math.clamp(z,-80,80),r.Z)u.AssemblyAngularVelocity=Vector3.new(0,0,0)if r.Magnitude>.45 then j:ChangeState(Enum.HumanoidStateType.Running)else j:ChangeState(Enum.HumanoidStateType.Standing)end end end)end function findNearestPreparedFrameToPosition(q,c)if not q or#q<=0 or typeof(c)~="Vector3"then return 1,0 end local r=1 local j=((tableToVec(q[1].position)-c)).Magnitude local u=math.max(1,math.floor(#q/500))for u=1,#q,u do local M=tableToVec(q[u].position)local G=((M-c)).Magnitude if G<j then j=G r=u end end local M=math.min(u,50)for u=math.max(1,r-M),math.min(#q,r+M),1 do local M=tableToVec(q[u].position)local G=((M-c)).Magnitude if G<j then j=G r=u end end return r,j end function getTRGSmartStartForMIKSU(q)local c,r,j=getCharacter()if not j or not q or#q<2 then return 1,tonumber(q and(q[1]and((q[1].times or q[1].t))))or 0 end local u=tonumber(q[1].times)or tonumber(q[1].t)or 0 local M=tonumber(q[#q].times)or tonumber(q[#q].t)or u local G=math.max(M-MN,u)local d=tableToVec(q[1].position)local z=tableToVec(q[#q].position)local Y=((z-j.Position)).Magnitude local P,O=findNearestPreparedFrameToPosition(q,j.Position)P=math.clamp(tonumber(P)or 1,1,#q-1)local a=tonumber(q[P]and((q[P].times or q[P].t)))or u if Y<=uN and a>=G then notify("Smart Resume","Masih di FINISH, balik ke START",1)return 1,u end if O>50 then notify("Smart Resume","Jauh dari path, mulai dari START",1)return 1,u end if a>=G then notify("Smart Resume","Dekat akhir, lanjut dari titik terdekat",1)return P,a end notify("Smart Resume","Mulai dari titik terdekat",1)return P,a end function playFrames(q,c)q=preparePlaybackFrames(q)if not q or#q<=1 then notify("Playback","Data checkpoint kosong/rusak",3)return end captureMapSpeedBeforePlayback()nN=nN+1 local j=nN CN=true setPlaybackButtonState(true)local u,M,G=getPlaybackSpeedForFrames(q)local d=math.clamp(((tonumber(u)or G))/math.max(tonumber(G)or Z,1),.05,25)local z=d local Y=d local P=M and"MANUAL"or"AUTO MAP"if v and x then z=1 Y=1 d=1 P="RAW MAP"end task.spawn(function()notify("Playback","Play "..(tostring(c)..(" | "..(P..(" | speed "..tostring(u))))),3)local M,G,d=getCharacter()if not G or not d then CN=false setPlaybackButtonState(false)return end local O=G.AutoRotate local a=G.WalkSpeed local v=G.JumpPower pcall(function()G.AutoRotate=false G.PlatformStand=false G.Sit=false G.Jump=false G.WalkSpeed=math.clamp(u,k,K)d.AssemblyLinearVelocity=Vector3.new(0,0,0)d.AssemblyAngularVelocity=Vector3.new(0,0,0)end)local b,X=getTRGSmartStartForMIKSU(q)local x=q[b]or q[1]equipFrameTool(x,M,G)applyFrameInstant(x)task.wait(.02)local U=tonumber(q[1].times)or tonumber(q[1].t)or 0 local T=tonumber(q[#q].times)or tonumber(q[#q].t)or U local e=math.max(T-U,.001)local h=math.clamp(((tonumber(X)or U))-U,0,e)local V=os.clock()while j==nN and(CN and h<e)do M,G,d=getCharacter()if not G or not d then break end local c=os.clock()local j=c-V V=c if j<=0 then j=.016 elseif j>.2 then j=.1 end h=h+(j*z)local P=U+h local O=findPreparedFrameAtTimeFast(q,P)local a=q[O]local v=q[O+1]if not a or not v then break end local b=tonumber(a.times)or tonumber(a.t)or 0 local X=tonumber(v.times)or tonumber(v.t)or b local x=X-b if x<=.001 then x=o end local T=math.clamp(((P-b))/x,0,1)if v.seam==true or a.cutNext==true then equipFrameTool(v,M,G)applyFrameInstant(v)else equipFrameTool(v,M,G)applyFrameMeta(v,G)applyFrameTRGStyle(a,v,T,G,d,Y,u)end r.Heartbeat:Wait()end if j==nN and CN then local c=q[#q]applyFrameInstant(c)end local t,B,F=getCharacter()if F then pcall(function()F.AssemblyLinearVelocity=Vector3.new(0,0,0)F.AssemblyAngularVelocity=Vector3.new(0,0,0)end)end if B then pcall(function()B.AutoRotate=O B.PlatformStand=false B.Sit=false B.Jump=false B.WalkSpeed=math.max(tonumber(a)or 0,k)B.JumpPower=v or B.JumpPower B:ChangeState(Enum.HumanoidStateType.Running)end)end restoreCharacterControl()CN=false setPlaybackButtonState(false)notify("Playback","Selesai. Mode "..(P..(", speed "..tostring(u))),2)end)end X6=function(q)if not q or not q.frames then return end playFrames(q.frames,q.name)end function findRollbackTargetObjectIndex()if#kN<=2 then return nil,nil end local q=nil for c=#kN,1,-1 do local r=groundKeyFromFrame(kN[c])if r then q=r break end end if not q then return nil,nil end local c=false for r=#kN,1,-1 do local j=groundKeyFromFrame(kN[r])if j then if j==q then c=true elseif c then return r,j end end end for c=1,#kN,1 do if groundKeyFromFrame(kN[c])==q then return c,q end end return nil,nil end ROLLBACK_GROUND_RAY_UP=10 ROLLBACK_GROUND_RAY_DOWN=45 ROLLBACK_MAX_GROUND_Y_DIFF=8 ROLLBACK_STAND_EXTRA_Y=.12 ROLLBACK_MIN_HRP_GROUND_OFFSET=2.2 ROLLBACK_MAX_HRP_GROUND_OFFSET=12 function isRollbackPartValid(q)if not q then return false end if q==workspace.Terrain then return true end local c,r=pcall(function()return q.CanCollide end)if not c then return false end if r~=true then return false end local j=G and G.Character if j and q:IsDescendantOf(j)then return false end return true end ROLLBACK_CEILING_SKIP_MARGIN=1.15 ROLLBACK_GROUND_SCAN_LIMIT=12 ROLLBACK_HEAD_CHECK_UP=5.5 function makeRollbackRaycastParams(q)local c=G and G.Character local r={}if c then table.insert(r,c)end if type(q)=="table"then for q,c in ipairs(q)do if c then table.insert(r,c)end end end local j=RaycastParams.new()pcall(function()j.FilterType=Enum.RaycastFilterType.Blacklist end)pcall(function()j.FilterDescendantsInstances=r end)pcall(function()j.IgnoreWater=true end)return j end function raycastRollbackGround(q)if typeof(q)~="Vector3"then return nil end local c={}local r=q+Vector3.new(0,ROLLBACK_GROUND_RAY_UP,0)local j=Vector3.new(0,-((ROLLBACK_GROUND_RAY_UP+ROLLBACK_GROUND_RAY_DOWN)),0)for u=1,ROLLBACK_GROUND_SCAN_LIMIT,1 do local M=makeRollbackRaycastParams(c)local G,d=pcall(function()return workspace:Raycast(r,j,M)end)if not G or not d or not d.Instance then return nil end local z=d.Instance local Y=d.Position and d.Position.Y or-math.huge local P=Y>(q.Y-ROLLBACK_CEILING_SKIP_MARGIN)if P or not isRollbackPartValid(z)then table.insert(c,z)else return d end end return nil end function raycastRollbackCeiling(q,c)if typeof(q)~="Vector3"then return nil end local r=makeRollbackRaycastParams()local j=tonumber(c and c.HipHeight)or 2 local u=q+Vector3.new(0,1.0,0)local M=Vector3.new(0,math.max(ROLLBACK_HEAD_CHECK_UP,j+3.2),0)local G,d=pcall(function()return workspace:Raycast(u,M,r)end)if G and(d and(d.Instance and isRollbackPartValid(d.Instance)))then return d end return nil end function getRollbackHoldCFrame(q,c)if q and raycastRollbackCeiling(q.Position,c)then return q end return q+Vector3.new(0,.85,0)end function getRollbackRecordedGroundOffset(q,c)local r=tableToVec(q and q.position)local j=nil if type(q)=="table"and(type(q.ground)=="table"and type(q.ground.hitPosition)=="table")then local c=tableToVec(q.ground.hitPosition)j=r.Y-c.Y end if not j or j~=j or j<ROLLBACK_MIN_HRP_GROUND_OFFSET or j>ROLLBACK_MAX_HRP_GROUND_OFFSET then j=((tonumber(c and c.HipHeight)or tonumber(q and q.hipHeight)or 2))+2 end return math.clamp(j,ROLLBACK_MIN_HRP_GROUND_OFFSET,ROLLBACK_MAX_HRP_GROUND_OFFSET)end function getSafeRollbackCFrame(q,c)if type(q)~="table"then return nil,nil,"no_frame"end if isRollbackAirFrame(q)then return nil,nil,"air_frame"end local r=getFrameCFrame(q)local j=r.Position local u=raycastRollbackGround(j)if not u then return nil,nil,"no_ground_now"end local M=getRollbackRecordedGroundOffset(q,c)local G=Vector3.new(j.X,(u.Position.Y+M)+ROLLBACK_STAND_EXTRA_Y,j.Z)if math.abs(G.Y-j.Y)>ROLLBACK_MAX_GROUND_Y_DIFF then return nil,nil,"wrong_ground_y"end local d,z,Y=r:ToOrientation()local P=CFrame.new(G)*CFrame.Angles(0,z,0)return P,G,"ok"end function isSafeRollbackFrameIndex(q)local c,r=getCharacter()local j=kN[q]local u=nil if not j then return false end u=select(1,getSafeRollbackCFrame(j,r))return u~=nil end function findSafeRollbackIndex(q)q=math.clamp(tonumber(q)or#kN,1,#kN)for q=q,1,-1 do if isSafeRollbackFrameIndex(q)then return q end end return nil end function isRollbackStillGrounded(q,c,r)local j=raycastRollbackGround(q)if not j then return false end local u=getRollbackRecordedGroundOffset(c,r)local M=q.Y-j.Position.Y return M>=(ROLLBACK_MIN_HRP_GROUND_OFFSET-.5)and M<=(u+3.5)end function applyRollbackSmoothToFrame(q,c)local j,u,M=getCharacter()if not u or not M or type(q)~="table"then return false end if not ZN or not NN or SN or c~=sN then return false end local G,d,z=getSafeRollbackCFrame(q,u)if not G or not d then return false end local Y=u.AutoRotate local P=u.PlatformStand pcall(function()u.AutoRotate=false u.PlatformStand=true u:Move(Vector3.new(0,0,0),true)u:ChangeState(Enum.HumanoidStateType.Physics)end)pcall(function()M.Anchored=true end)local O=getRollbackHoldCFrame(G,u)for q=1,10,1 do if not ZN or not NN or SN or c~=sN then pcall(function()M.Anchored=false end)pcall(function()u.PlatformStand=P u.AutoRotate=Y end)return false end pcall(function()M.AssemblyLinearVelocity=Vector3.new(0,0,0)M.AssemblyAngularVelocity=Vector3.new(0,0,0)M.CFrame=O end)r.Heartbeat:Wait()end pcall(function()M.CFrame=G M.AssemblyLinearVelocity=Vector3.new(0,0,0)M.AssemblyAngularVelocity=Vector3.new(0,0,0)end)task.wait(.08)pcall(function()M.Anchored=false end)pcall(function()u.PlatformStand=P u.AutoRotate=Y u.HipHeight=tonumber(q.hipHeight)or u.HipHeight u:ChangeState(Enum.HumanoidStateType.Running)u:Move(Vector3.new(0,0,0),true)end)for q=1,3,1 do r.Heartbeat:Wait()end local a=false local o=false pcall(function()a=((M.Position-d)).Magnitude<=7 o=isRollbackStillGrounded(M.Position,q,u)end)if a and o then u6=M.Position return true end return false end e6=function()if not ZN then notify("Rollback","Recording belum berjalan",2)return end O6()if NN then SN=true sN=sN+1 NN=false if Ma then Ma.Text="ROLL"Ma.BackgroundColor3=Color3.fromRGB(80,95,170)end if DN then DN.Text="\226\151\143 REC"end restoreCharacterControl()local q,c,r=getCharacter()if r then u6=r.Position end updateOverlay()notify("Rollback","Rollback distop. Record lanjut dari posisi ini.",2)return end if#kN<=2 then notify("Rollback","Frame masih terlalu sedikit",2)return end NN=true SN=false sN=sN+1 local q=sN if DN then DN.Text="\226\134\182 ROLLBACK. klik lagi untuk STOP"end if Ma then Ma.Text="STOP ROLL"Ma.BackgroundColor3=Color3.fromRGB(190,80,55)end task.spawn(function()local c,r,j=getCharacter()local u=nil if r then u=r.AutoRotate pcall(function()r.AutoRotate=false end)end local M,G=findRollbackBeforeJumpIndex()local d=M~=nil and M<#kN local z=nil local Y=false if not d then M,z=findRollbackTargetObjectIndex()Y=M~=nil and M<#kN end local P=0 if d or Y then local c=findSafeRollbackIndex(M)if c then M=c end local r=c and kN[M]or nil local j=false if r and(ZN and(NN and(not SN and q==sN)))then j=applyRollbackSmoothToFrame(r,q)end if j then while#kN>M do table.remove(kN,#kN)P=P+1 end else notify("Rollback","Gagal balik: map menarik avatar. Frame tidak dihapus.",3)end updateOverlay()else local c=math.min(bN,math.max(0,#kN-1))local r=#kN-1 while ZN and(NN and(not SN and(q==sN and(r>=1 and P<c))))do local c=kN[r]if not c then break end local j=applyRollbackSmoothToFrame(c,q)if j then while#kN>r do table.remove(kN,#kN)P=P+1 end updateOverlay()break end r=r-1 end if P<=0 then notify("Rollback","Tidak ada posisi rollback yang aman. Frame tidak dihapus.",3)end end local O,a,o=getCharacter()if a and u~=nil then pcall(function()a.AutoRotate=u end)end if o then pcall(function()o.AssemblyLinearVelocity=Vector3.new(0,0,0)o.AssemblyAngularVelocity=Vector3.new(0,0,0)end)u6=o.Position end restoreCharacterControl()if q==sN then kN=basicNormalizeFrames(kN)or kN NN=false SN=false if Ma then Ma.Text="ROLL"Ma.BackgroundColor3=Color3.fromRGB(80,95,170)end if ZN and DN then DN.Text="\226\151\143 REC"end updateOverlay()if P>0 then if d then notify("Rollback","Balik ke posisi sebelum lompat | "..(tostring(P).." frame dihapus"),3)elseif Y then notify("Rollback","Balik ke object terakhir: "..(tostring(z or"object")..(" | "..(tostring(P).." frame"))),3)else notify("Rollback","Fallback mundur "..(tostring(P).." frame"),3)end else notify("Rollback","Rollback berhenti",2)end else NN=false SN=false if Ma then Ma.Text="ROLL"Ma.BackgroundColor3=Color3.fromRGB(80,95,170)end if ZN and DN then DN.Text="\226\151\143 REC"end kN=basicNormalizeFrames(kN)or kN updateOverlay()end end)end local va=.14 local ba=2.25 local Xa=.08 local xa=.035 local Ua=.035 local Ta=.055 local ea=.004 function getFrameState(q)return tostring(q and((q.states or q.state))or"Running")end function getFramePosVector(q)return tableToVec(q and q.position)end function getFrameCityVector(q)return tableToVec(q and q.city)end function getFrameMoveVector(q)return tableToVec(q and q.moveDirection)end function getFrameHorizontalSpeed(q)local c=getFrameCityVector(q)return(Vector3.new(c.X,0,c.Z)).Magnitude end function getFrameMoveMagnitude(q)local c=getFrameMoveVector(q)return(Vector3.new(c.X,0,c.Z)).Magnitude end function getYawDiff(q,c)local r=tonumber(q and q.rotation)or 0 local j=tonumber(c and c.rotation)or r local u=j-r return math.abs(math.atan(math.sin(u),math.cos(u)))end function isMotionProtectedFrame(q)if not q then return false end local c=getFrameState(q)if mobileDeltaFrameHasGroundContact(q)and(c~="Climbing"and c~="Swimming")then return false end if q.jump==true then return true end return c=="Jumping"or c=="Freefall"or c=="FallingDown"or c=="Climbing"or c=="Swimming"end function frameDistance(q,c)if not q or not c then return 0,0,0 end local r=getFramePosVector(q)local j=getFramePosVector(c)local u=j-r local M=(Vector3.new(u.X,0,u.Z)).Magnitude local G=math.abs(u.Y)return u.Magnitude,M,G end function isFrameIdleBetween(q,c,r,j)if not c then return true end if isMotionProtectedFrame(c)then return false end local u=getFrameHorizontalSpeed(c)local M=getFrameMoveMagnitude(c)local G=q and getYawDiff(q,c)or 0 local d=r and getYawDiff(c,r)or 0 if G>=Ua or d>=Ua then return false end local z=q and select(1,frameDistance(q,c))or 999 local Y=r and select(1,frameDistance(c,r))or 999 local P=math.min(z,Y)if j then return P<=va and(u<=ba and M<=Xa)end return P<=xa and(u<=ba and M<=Xa)end function trimIdleStartEnd(q)if not q or#q<=2 then return q or{}end local c=1 local r=#q while c<r and isFrameIdleBetween(nil,q[c],q[c+1],true)do c=c+1 end while r>c and isFrameIdleBetween(q[r-1],q[r],nil,true)do r=r-1 end local j={}for c=c,r,1 do table.insert(j,deepCopy(q[c]))end if#j<=0 then return q end return j end function estimateCleanDt(q,c)if not q or not c then return 0 end local r=((tonumber(c.times)or tonumber(c.t)or 0))-((tonumber(q.times)or tonumber(q.t)or 0))local j,u,M=frameDistance(q,c)local G=getFrameCityVector(q)local d=getFrameCityVector(c)local z=math.max((Vector3.new(G.X,0,G.Z)).Magnitude,(Vector3.new(d.X,0,d.Z)).Magnitude)local Y=math.max(math.abs(G.Y),math.abs(d.Y))local P=nil if z>1 and u>.005 then P=u/z end if Y>1 and M>.005 then local q=M/Y if P then P=math.max(P,q)else P=q end end local O=r if O<=0 or O>Ta then O=P or o end if P and O>Ta then O=P end return math.clamp(O,ea,Ta)end function compactCleanTimes(q)local c={}local r=0 local j=nil for u,M in ipairs(q or{})do local G=deepCopy(M)if u==1 then r=0 else r=r+estimateCleanDt(j or q[u-1],M)end G.times=roundNumber(r,9)G.t=G.times table.insert(c,G)j=M end return c end ANTI_KEDUT_EDGE_RATIO=.62 ANTI_KEDUT_INTERNAL_RATIO=.38 ANTI_KEDUT_DUP_DIST=.22 ANTI_KEDUT_KEEP_DIST=.32 ANTI_KEDUT_MIN_RUN_SPEED=8 ANTI_KEDUT_MIN_DT=.004 ANTI_KEDUT_MAX_DT=.038 ANTI_KEDUT_ROT_PROTECT=.2 function antiKedutIsAir(q)if not q then return false end local c=tostring(q.states or q.state or"")if mobileDeltaFrameHasGroundContact(q)and(c~="Climbing"and c~="Swimming")then return false end if q.jump==true then return true end return c=="Jumping"or c=="Freefall"or c=="FallingDown"or c=="Climbing"or c=="Swimming"end function antiKedutPos(q)return tableToVec(q and q.position)end function antiKedutCity(q)return tableToVec(q and q.city)end function antiKedutMove(q)return tableToVec(q and q.moveDirection)end function antiKedutHDist(q,c)if not q or not c then return 0 end local r=antiKedutPos(q)local j=antiKedutPos(c)return(Vector3.new(j.X-r.X,0,j.Z-r.Z)).Magnitude end function antiKedutVDist(q,c)if not q or not c then return 0 end local r=antiKedutPos(q)local j=antiKedutPos(c)return math.abs(j.Y-r.Y)end function antiKedutDist(q,c)if not q or not c then return 0 end return((antiKedutPos(c)-antiKedutPos(q))).Magnitude end function antiKedutHSpeed(q)local c=antiKedutCity(q)return(Vector3.new(c.X,0,c.Z)).Magnitude end function antiKedutMoveMag(q)local c=antiKedutMove(q)return(Vector3.new(c.X,0,c.Z)).Magnitude end function antiKedutYawDiff(q,c)if not q or not c then return 0 end local r=tonumber(q.rotation)or 0 local j=tonumber(c.rotation)or r local u=j-r return math.abs(math.atan(math.sin(u),math.cos(u)))end function antiKedutBaseSpeed(q)local c={}for q,r in ipairs(q or{})do if r and not antiKedutIsAir(r)then local q=antiKedutHSpeed(r)if q>3 then table.insert(c,q)end end end if#c<=0 then for q,r in ipairs(q or{})do local j=antiKedutHSpeed(r)if j>3 then table.insert(c,j)end end end if#c<=0 then return tonumber(c6)or tonumber(q6)or N or Z end table.sort(c)local r=math.floor(((#c+1))/2)local j=tonumber(c[r])or N or Z return math.max(j,ANTI_KEDUT_MIN_RUN_SPEED)end function antiKedutTrimEdges(q)q=q or{}if#q<=2 then return q end local c=antiKedutBaseSpeed(q)local r=1 local j=#q while r<j do local j=q[r]local u=q[r+1]if antiKedutIsAir(j)then break end local M=antiKedutHSpeed(j)local G=antiKedutMoveMag(j)local d=antiKedutDist(j,u)local z=M<math.max(ANTI_KEDUT_MIN_RUN_SPEED,c*ANTI_KEDUT_EDGE_RATIO)local Y=d<ANTI_KEDUT_KEEP_DIST if z or G<.08 or Y then r=r+1 else break end end while j>r do local r=q[j]local u=q[j-1]if antiKedutIsAir(r)then break end local M=antiKedutHSpeed(r)local G=antiKedutMoveMag(r)local d=antiKedutDist(u,r)local z=M<math.max(ANTI_KEDUT_MIN_RUN_SPEED,c*ANTI_KEDUT_EDGE_RATIO)local Y=d<ANTI_KEDUT_KEEP_DIST if z or G<.08 or Y then j=j-1 else break end end local u={}for c=r,j,1 do table.insert(u,deepCopy(q[c]))end if#u<=0 then return q end return u end function antiKedutDirectionBetween(q,c)if not q or not c then return Vector3.new(0,0,0)end local r=antiKedutPos(q)local j=antiKedutPos(c)local u=Vector3.new(j.X-r.X,0,j.Z-r.Z)if u.Magnitude<=.001 then return Vector3.new(0,0,0)end return u.Unit end function antiKedutStabilizeRun(q,c,r,j)if v then return c end if not c or antiKedutIsAir(c)then return c end local u=nil if q then u=antiKedutDirectionBetween(q,c)end if((not u or u.Magnitude<=.01))and r then u=antiKedutDirectionBetween(c,r)end if u and u.Magnitude>.01 then local q=antiKedutHSpeed(c)local r=tonumber(c.walkSpeed)or 0 local M=math.max(q,r,tonumber(j)or 0,ANTI_KEDUT_MIN_RUN_SPEED)M=math.clamp(M,ANTI_KEDUT_MIN_RUN_SPEED,K or 500000)c.moveDirection=vecToTable(u)c.city=vecToTable(u*M)c.states="Running"c.jump=false end return c end function antiKedutCleanInternal(q)q=q or{}if#q<=2 then return q,0 end local c=antiKedutBaseSpeed(q)local r={}local j=0 for u=1,#q,1 do local M=deepCopy(q[u])local G=q[u-1]local d=q[u+1]local z=r[#r]local Y=true if#r<=0 or u==#q then Y=true elseif antiKedutIsAir(M)then Y=true else local q=antiKedutDist(z,M)local r=antiKedutHDist(z,M)local j=antiKedutVDist(z,M)local u=antiKedutHSpeed(M)local P=antiKedutMoveMag(M)local O=math.max(antiKedutYawDiff(G,M),antiKedutYawDiff(M,d))local a=u<math.max(ANTI_KEDUT_MIN_RUN_SPEED,c*ANTI_KEDUT_INTERNAL_RATIO)if q<ANTI_KEDUT_DUP_DIST and j<.08 then Y=false elseif a and(r<ANTI_KEDUT_KEEP_DIST and P<.18)then Y=false elseif O>ANTI_KEDUT_ROT_PROTECT and(r<ANTI_KEDUT_DUP_DIST and u<c*.55)then Y=false else Y=true end end if Y then M=antiKedutStabilizeRun(r[#r],M,d,c)table.insert(r,M)else j=j+1 end end if#r<=0 then return q,j end return r,j end function antiKedutCompactTimes(q)q=q or{}if#q<=0 then return q end local c=antiKedutBaseSpeed(q)local r={}local j=0 for u=1,#q,1 do local M=deepCopy(q[u])if u==1 then j=0 else local q=r[#r]local u=antiKedutDist(q,M)local G=antiKedutHDist(q,M)local d=antiKedutVDist(q,M)local z=math.max(antiKedutHSpeed(q),antiKedutHSpeed(M),c)local Y=math.max(math.abs((antiKedutCity(q)).Y),math.abs((antiKedutCity(M)).Y),1)local P=0 if antiKedutIsAir(q)or antiKedutIsAir(M)then local q=0 local c=0 if G>.005 then q=G/math.max(z,1)end if d>.005 then c=d/math.max(Y,1)end P=math.max(q,c,ANTI_KEDUT_MIN_DT)P=math.clamp(P,ANTI_KEDUT_MIN_DT,.055)else if u>.005 then P=u/math.max(z,1)else P=ANTI_KEDUT_MIN_DT end P=math.clamp(P,ANTI_KEDUT_MIN_DT,ANTI_KEDUT_MAX_DT)end j=j+P end M.times=roundNumber(j,9)M.t=M.times table.insert(r,M)end return r end NO_IDLE_TURN_SMOOTH=true NO_IDLE_TURN_MIN_GAP=.1 NO_IDLE_TURN_MIN_YAW=math.rad(18)NO_IDLE_TURN_MIN_FRAMES=5 NO_IDLE_TURN_MAX_FRAMES=18 NO_IDLE_TURN_MAX_DIST=18 function antiKedutSmoothIdleRotation(q)if not NO_IDLE_TURN_SMOOTH then return q end if type(q)~="table"or#q<=2 then return q end local c=deepCopy(q)for q=1,#c-1,1 do local r=c[q]local j=c[q+1]if r and(j and(not antiKedutIsAir(r)and not antiKedutIsAir(j)))then local u=tonumber(r.times)or tonumber(r.t)or 0 local M=tonumber(j.times)or tonumber(j.t)or u local G=M-u local d=tonumber(r.rotation)or 0 local z=tonumber(j.rotation)or d local Y=z-d Y=math.atan(math.sin(Y),math.cos(Y))local P=antiKedutDist(r,j)if G>=NO_IDLE_TURN_MIN_GAP and(math.abs(Y)>=NO_IDLE_TURN_MIN_YAW and P<=NO_IDLE_TURN_MAX_DIST)then local r=math.floor(math.abs(Y)/math.rad(7))r=math.clamp(r,NO_IDLE_TURN_MIN_FRAMES,NO_IDLE_TURN_MAX_FRAMES)local j=math.min(#c,q+r)if j>q+1 then for r=q+1,j,1 do local u=((r-q))/math.max(j-q,1)local M=smoothStep(u)c[r].rotation=roundNumber(d+(Y*M),9)end end end end end return c end ANTI_KEDUT_REFERENCE_JUMP_ENABLED=true REF_JUMP_TARGET_GROUND_FRAMES=7 REF_JUMP_MAX_SCAN_GROUND_FRAMES=18 REF_JUMP_GAP_MAX_TIME=.2 REF_JUMP_GAP_MAX_DISTANCE=13 REF_JUMP_MIN_DT=.004 REF_JUMP_AIR_MAX_DT=.0195 REF_JUMP_GROUND_MAX_DT=.0145 REF_JUMP_NORMAL_MAX_DT=.034 REF_JUMP_MIN_AIR_HSPEED_RATIO=.86 REF_JUMP_MAX_AIR_HSPEED_RATIO=1.24 REF_JUMP_MIN_GROUND_HSPEED_RATIO=.82 REF_JUMP_MIN_JUMP_Y_SPEED=18 REF_JUMP_SMOOTH_PASSES=3 REF_JUMP_SMOOTH_NEIGHBOR_MAX_DIST=6.5 REF_JUMP_ROT_SMOOTH_LIMIT=math.rad(70)REF_JUMP_ULTRA_SMOOTH_ENABLED=true REF_JUMP_ULTRA_SMOOTH_PASSES=1 REF_JUMP_ULTRA_POS_ALPHA=.16 REF_JUMP_ULTRA_Y_ALPHA_AIR=.06 REF_JUMP_ULTRA_ROT_ALPHA=.0 REF_JUMP_ULTRA_MAX_STEP_DIST=7.5 REF_JUMP_KEEP_MAP_AIR_CONTROL=true REF_JUMP_KEEP_ORIGINAL_ROTATION=true REF_JUMP_KEEP_ORIGINAL_CITY_DIR=true REF_JUMP_MIN_MOTION_SPEED_KEEP=8 RUN_ANTI_BLING_ENABLED=true RUN_ANTI_BLING_MAX_STEP=1.45 RUN_ANTI_BLING_MAX_BRIDGE_DISTANCE=18 RUN_ANTI_BLING_INSERT_MAX=10 RUN_ANTI_BLING_MIN_DT=.0085 RUN_ANTI_BLING_MAX_DT=.05 RUN_ANTI_BLING_SPEED_CAP_MULT=1.16 RUN_ANTI_BLING_KEEP_ROTATION=true RUN_PLAYBACK_VISUAL_GUARD=true RUN_PLAYBACK_BIG_GAP_DISTANCE=6.2 RUN_PLAYBACK_MAX_VISUAL_STEP=4.25 function refJumpIsAir(q)if type(q)~="table"then return false end local c=tostring(q.states or q.state or"")if mobileDeltaFrameHasGroundContact(q)then return false end if q.jump==true then return true end return c=="Jumping"or c=="Freefall"or c=="FallingDown"end function refJumpIsHardProtected(q)if type(q)~="table"then return false end if q.seam==true or q.cutNext==true then return true end local c=tostring(q.states or q.state or"")return c=="Climbing"or c=="Swimming"end function refJumpTime(q)return tonumber(q and((q.times or q.t)))or 0 end function refJumpFlatDirFromPos(q,c)if not q or not c then return nil end local r=antiKedutPos(q)local j=antiKedutPos(c)local u=Vector3.new(j.X-r.X,0,j.Z-r.Z)if u.Magnitude<=.001 then return nil end return u.Unit end function refJumpDirAround(q,c)local r=nil if q[c-1]and q[c+1]then r=refJumpFlatDirFromPos(q[c-1],q[c+1])end if not r and q[c-1]then r=refJumpFlatDirFromPos(q[c-1],q[c])end if not r and q[c+1]then r=refJumpFlatDirFromPos(q[c],q[c+1])end return r end function refJumpIsShortGroundGap(q,c,r,j)if not q or not q[c]or not q[r]or not q[j]then return false end local u=q[c-1]local M=q[j]if not u or not refJumpIsAir(u)or not refJumpIsAir(M)then return false end local G=(r-c)+1 if G<=REF_JUMP_TARGET_GROUND_FRAMES then return false end if G>REF_JUMP_MAX_SCAN_GROUND_FRAMES then return false end for c=c,r,1 do if refJumpIsHardProtected(q[c])then return false end end local d=math.max(0,refJumpTime(M)-refJumpTime(u))local z=antiKedutDist(u,M)return d<=REF_JUMP_GAP_MAX_TIME and z<=REF_JUMP_GAP_MAX_DISTANCE end function refJumpSampleGroundBlock(q,c,r)local j=(r-c)+1 local u=math.min(j,REF_JUMP_TARGET_GROUND_FRAMES)local M={}local G={}local function d(q)q=math.clamp(math.floor(q+.5),c,r)if not G[q]then G[q]=true table.insert(M,q)end end if u<=1 then d(r)else for q=1,u,1 do local r=((q-1))/math.max(u-1,1)d(c+(((j-1))*r))end end local z=0 local Y=nil for c=c+1,r-1,1 do local r=math.max(antiKedutYawDiff(q[c-1],q[c]),antiKedutYawDiff(q[c],q[c+1]))if r>z then z=r Y=c end end if Y and(z>math.rad(9)and#M<REF_JUMP_TARGET_GROUND_FRAMES+1)then d(Y)end table.sort(M)local P={}for c,r in ipairs(M)do table.insert(P,deepCopy(q[r]))end return P end function refJumpCompressGroundGaps(q)q=q or{}if#q<=3 then return q,0 end local c={}local r=0 local j=1 while j<=#q do local u=q[j]if j>1 and(u and(not refJumpIsAir(u)and refJumpIsAir(q[j-1])))then local M=j local G=j while G<=#q and(q[G]and not refJumpIsAir(q[G]))do G=G+1 end if G<=#q and refJumpIsShortGroundGap(q,M,G-1,G)then local u=refJumpSampleGroundBlock(q,M,G-1)for q,r in ipairs(u)do table.insert(c,r)end r=r+((((G-M))-#u))j=G else table.insert(c,deepCopy(u))j=j+1 end else table.insert(c,deepCopy(u))j=j+1 end end if#c<=0 then return q,r end return c,r end function refJumpMarkChain(q)q=q or{}local c={}for q,r in ipairs(q)do if refJumpIsAir(r)then c[q]=true end end local r=1 while r<=#q do if q[r]and(not refJumpIsAir(q[r])and(r>1 and refJumpIsAir(q[r-1])))then local j=r local u=r while u<=#q and(q[u]and not refJumpIsAir(q[u]))do u=u+1 end if u<=#q then local r=q[j-1]local M=q[u]local G=math.max(0,refJumpTime(M)-refJumpTime(r))local d=antiKedutDist(r,M)if G<=REF_JUMP_GAP_MAX_TIME and d<=REF_JUMP_GAP_MAX_DISTANCE then for q=j,u-1,1 do c[q]=true end end end r=u else r=r+1 end end return c end function refJumpSmoothPositions(q)q=q or{}if#q<=3 then return q end local c=deepCopy(q)for q=1,REF_JUMP_SMOOTH_PASSES,1 do local r=deepCopy(c)local j=refJumpMarkChain(r)for q=2,#r-1,1 do local u=r[q]local M=r[q-1]local G=r[q+1]if j[q]and(not refJumpIsHardProtected(u)and(M and G))then local r=antiKedutDist(M,u)local j=antiKedutDist(u,G)if r<=REF_JUMP_SMOOTH_NEIGHBOR_MAX_DIST and j<=REF_JUMP_SMOOTH_NEIGHBOR_MAX_DIST then local r=antiKedutPos(M)local j=antiKedutPos(u)local d=antiKedutPos(G)local z=((r*.18)+(j*.64))+(d*.18)if refJumpIsAir(u)then local r=j.Y+(((z.Y-j.Y))*.18)c[q].position=vecToTable(Vector3.new(z.X,r,z.Z))else c[q].position=vecToTable(Vector3.new(z.X,j.Y,z.Z))end end end end end return c end function refJumpUltraSmoothChains(q)q=q or{}if not REF_JUMP_ULTRA_SMOOTH_ENABLED or#q<=4 then return q end local c=deepCopy(q)for q=1,REF_JUMP_ULTRA_SMOOTH_PASSES,1 do local r=deepCopy(c)local j=refJumpMarkChain(r)for q=2,#r-1,1 do local u=r[q]local M=r[q-1]local G=r[q+1]if j[q]and(u and(M and(G and not refJumpIsHardProtected(u))))then local r=antiKedutDist(M,u)local j=antiKedutDist(u,G)if r<=REF_JUMP_ULTRA_MAX_STEP_DIST and j<=REF_JUMP_ULTRA_MAX_STEP_DIST then local r=antiKedutPos(M)local j=antiKedutPos(u)local d=antiKedutPos(G)local z=((r+d))*.5 local Y=j.X+(((z.X-j.X))*REF_JUMP_ULTRA_POS_ALPHA)local P=j.Z+(((z.Z-j.Z))*REF_JUMP_ULTRA_POS_ALPHA)local O=j.Y if refJumpIsAir(u)then O=j.Y+(((z.Y-j.Y))*REF_JUMP_ULTRA_Y_ALPHA_AIR)end c[q].position=vecToTable(Vector3.new(Y,O,P))end end end end return c end function refJumpRebuildMoveDirectionFromPath(q)return q or{}end function refJumpMotionDirFromOriginal(q,c)if type(q)~="table"then return c,0 end local r=antiKedutCity(q)local j=Vector3.new(r.X,0,r.Z)if j.Magnitude>=REF_JUMP_MIN_MOTION_SPEED_KEEP then return j.Unit,j.Magnitude end local u=tableToVec(q.moveDirection)local M=Vector3.new(u.X,0,u.Z)if M.Magnitude>=.03 then return M.Unit,0 end return c,0 end function refJumpStabilizeMomentum(q)q=q or{}if#q<=1 then return q end local c=E and framesLookMobileDeltaSafe(q)local r=antiKedutBaseSpeed(q)local j=refJumpMarkChain(q)local u=deepCopy(q)for q,M in ipairs(u)do if j[q]and not refJumpIsHardProtected(M)then local j=refJumpDirAround(u,q)local G,d=refJumpMotionDirFromOriginal(M,j)if G and G.Magnitude>.01 then local q=antiKedutCity(M)local j=(Vector3.new(q.X,0,q.Z)).Magnitude local u=math.max(d or 0,j)local z=refJumpIsAir(M)and REF_JUMP_MIN_AIR_HSPEED_RATIO or REF_JUMP_MIN_GROUND_HSPEED_RATIO local Y=math.max(r*z,ANTI_KEDUT_MIN_RUN_SPEED)local P=math.max(r*REF_JUMP_MAX_AIR_HSPEED_RATIO,Y)if c then if u<=.05 then u=math.max(r*.72,ANTI_KEDUT_MIN_RUN_SPEED)elseif u>P then u=math.min(u,P)end else if u<Y then u=Y elseif u>P then u=math.min(u,P)end end local O=q.Y if refJumpIsAir(M)then local q=tostring(M.states or M.state or"")if q=="Jumping"or M.jump==true then if(not c)and(O>0 and O<REF_JUMP_MIN_JUMP_Y_SPEED)then O=REF_JUMP_MIN_JUMP_Y_SPEED end M.jump=true M.states="Jumping"elseif q=="FallingDown"then M.states="Freefall"end else O=0 M.jump=false M.states="Running"end local a=tableToVec(M.moveDirection)local o=Vector3.new(a.X,0,a.Z)if o.Magnitude>=.03 then M.moveDirection=vecToTable(o.Unit)else M.moveDirection=vecToTable(G)end M.city=vecToTable(Vector3.new(G.X*u,O,G.Z*u))end end end return u end function refJumpCompactTimes(q)q=q or{}if#q<=0 then return q end local c=E and framesLookMobileDeltaSafe(q)local r=antiKedutBaseSpeed(q)local j=refJumpMarkChain(q)local u={}local M=0 for G=1,#q,1 do local d=deepCopy(q[G])if G==1 then M=0 else local z=u[#u]local Y=q[G-1]local P=antiKedutHDist(z,d)local O=antiKedutVDist(z,d)local a=antiKedutDist(z,d)local o=math.max(antiKedutHSpeed(z),antiKedutHSpeed(d),r)local v=math.max(math.abs((antiKedutCity(z)).Y),math.abs((antiKedutCity(d)).Y),REF_JUMP_MIN_JUMP_Y_SPEED)local b=((tonumber(q[G].times)or tonumber(q[G].t)or 0))-((tonumber(Y and((Y.times or Y.t)))or 0))local X if j[G]or j[G-1]or refJumpIsAir(z)or refJumpIsAir(d)then local q=(P>.005)and(P/math.max(o,1))or REF_JUMP_MIN_DT local r=(O>.005)and(O/math.max(v,1))or REF_JUMP_MIN_DT X=math.max(q,r,REF_JUMP_MIN_DT)if c then local q=b>0 and(b*((Q or.85)))or X X=math.max(X,q)if refJumpIsAir(z)or refJumpIsAir(d)then X=math.clamp(X,m or.01,i or.045)else X=math.clamp(X,L or.0085,p or.03)end else if refJumpIsAir(z)or refJumpIsAir(d)then X=math.clamp(X,REF_JUMP_MIN_DT,REF_JUMP_AIR_MAX_DT)else X=math.clamp(X,REF_JUMP_MIN_DT,REF_JUMP_GROUND_MAX_DT)end end else X=(a>.005)and(a/math.max(o,1))or ANTI_KEDUT_MIN_DT if c and b>0 then X=math.max(X,b*((Q or.85)))X=math.clamp(X,ANTI_KEDUT_MIN_DT,I or.055)else X=math.clamp(X,ANTI_KEDUT_MIN_DT,REF_JUMP_NORMAL_MAX_DT)end end M=M+X end d.times=roundNumber(M,9)d.t=d.times table.insert(u,d)end return u end function runAntiBlingIsRunning(q)if type(q)~="table"then return false end if refJumpIsAir(q)or refJumpIsHardProtected(q)then return false end if q.jump==true then return false end local c=tostring(q.states or q.state or"")if c==""or c=="Running"or c=="Landed"or c=="Walking"or c=="Standing"then return true end return false end function runAntiBlingFlatDir(q,c)if not q or not c then return nil end local r=antiKedutPos(q)local j=antiKedutPos(c)local u=Vector3.new(j.X-r.X,0,j.Z-r.Z)if u.Magnitude<=.001 then return nil end return u.Unit end function runAntiBlingBaseSpeedFromPair(q,c,r)local j=math.max(antiKedutHSpeed(q),antiKedutHSpeed(c),tonumber(q and q.walkSpeed)or 0,tonumber(c and c.walkSpeed)or 0,tonumber(r)or 0,ANTI_KEDUT_MIN_RUN_SPEED or 8)return math.clamp(j,ANTI_KEDUT_MIN_RUN_SPEED or 8,K or 500000)end function runAntiBlingInterpolateFrame(q,c,r,j)local u=deepCopy((r<.5 and q)or c)local M=antiKedutPos(q)local G=antiKedutPos(c)local d=M:Lerp(G,r)local z=tonumber(q and q.rotation)or 0 local Y=tonumber(c and c.rotation)or z local P=lerpAngle(z,Y,r)local O=runAntiBlingFlatDir(q,c)local a=runAntiBlingBaseSpeedFromPair(q,c,j)u.position=vecToTable(d)u.rotation=roundNumber(P,9)if O then u.moveDirection=vecToTable(O)u.city=vecToTable(Vector3.new(O.X*a,0,O.Z*a))else u.city=vecToTable(Vector3.new(0,0,0))end u.jump=false u.states="Running"u.seam=false u.cutNext=false u.ground=nil return u end function runAntiBlingInsertBridges(q)q=q or{}if not RUN_ANTI_BLING_ENABLED or#q<=1 then return q,0 end local c=antiKedutBaseSpeed(q)local r={}local j=0 for u=1,#q,1 do local M=q[u]table.insert(r,deepCopy(M))local G=q[u+1]if M and(G and(runAntiBlingIsRunning(M)and(runAntiBlingIsRunning(G)and(M.cutNext~=true and G.seam~=true))))then local q=antiKedutHDist(M,G)local u=antiKedutVDist(M,G)if q>RUN_ANTI_BLING_MAX_STEP and(q<=RUN_ANTI_BLING_MAX_BRIDGE_DISTANCE and u<=1.25)then local u=math.ceil(q/RUN_ANTI_BLING_MAX_STEP)u=math.clamp(u,2,RUN_ANTI_BLING_INSERT_MAX+1)for q=1,u-1,1 do local d=q/u table.insert(r,runAntiBlingInterpolateFrame(M,G,d,c))j=j+1 end end end end return r,j end function runAntiBlingRetuneTimes(q)q=q or{}if not RUN_ANTI_BLING_ENABLED or#q<=0 then return q end local c=antiKedutBaseSpeed(q)local r={}local j=0 for u=1,#q,1 do local M=deepCopy(q[u])if u==1 then j=0 else local G=q[u-1]local d=r[#r]local z=((tonumber(M.times)or tonumber(M.t)or 0))-((tonumber(G.times)or tonumber(G.t)or 0))if z<=0 then z=o or.004 end local Y=z if runAntiBlingIsRunning(d)and runAntiBlingIsRunning(M)then local q=antiKedutHDist(d,M)local r=runAntiBlingBaseSpeedFromPair(d,M,c)*((RUN_ANTI_BLING_SPEED_CAP_MULT or 1.16))local j=(q>.005)and(q/math.max(r,1))or(RUN_ANTI_BLING_MIN_DT or.0085)Y=math.max(z,j,RUN_ANTI_BLING_MIN_DT or.0085)Y=math.clamp(Y,RUN_ANTI_BLING_MIN_DT or.0085,RUN_ANTI_BLING_MAX_DT or.05)else Y=z end j=j+Y end M.times=roundNumber(j,9)M.t=M.times table.insert(r,M)end return r end function refJumpOptimizer(q,c)if not ANTI_KEDUT_REFERENCE_JUMP_ENABLED then if c~=false then return antiKedutCompactTimes(q),0 end return q,0 end q=basicNormalizeFrames(q)or q if type(q)~="table"or#q<=2 then return q,0 end local r=0 q,r=refJumpCompressGroundGaps(q)q=refJumpSmoothPositions(q)q=refJumpUltraSmoothChains(q)q=refJumpStabilizeMomentum(q)if c~=false then q=refJumpCompactTimes(q)end q=refJumpRebuildMoveDirectionFromPath(q)return q,r end function cleanFramesForSaveMerge(q,c)local r=basicNormalizeFrames(q)or q if type(r)~="table"or#r<=0 then return{},0 end if v and X then return prepareRawExactFramesForSave(r)end local j=#r local u=0 local M=0 local G=0 r=mobileDeltaFixAirStateByVelocity(r)r=antiKedutTrimEdges(r)r,u=antiKedutCleanInternal(r)r=antiKedutTrimEdges(r)r,M=antiKedutCleanInternal(r)r=antiKedutSmoothIdleRotation(r)r,G=refJumpOptimizer(r,c)local d=0 r,d=runAntiBlingInsertBridges(r)if c~=false then r=runAntiBlingRetuneTimes(r)end local z=0 local Y=nil r,z,Y=autoMapCleanSpeedForSave(r)local P=((math.max(0,j-#r)+((tonumber(u)or 0)))+((tonumber(M)or 0)))+((tonumber(G)or 0))return r,P end h6=function()if not KN or#KN<=0 then notify("Save","Belum ada record. Tekan RECORD lalu STOP dulu.",3)return end local q=cleanFileName(VN and VN.Text or"")if q==""or q=="checkpoint"then q=getNextDefaultName()end local c,r=cleanFramesForSaveMerge(KN,true)if not c or#c<=0 then notify("Save","Frame kosong setelah clean",3)return end local j,u,M=saveFramesToFile(q,c)local G=upsertCheckpoint(q,c,false,M)if LN then task.defer(refreshCheckpointMarkers)end KN={}if VN then VN.Text=""end if hN then hN.Text=""end if b6 then b6()task.defer(function()b6()end)end if j then notify("Save",q..(".json tersimpan | DELTA NO FALSE JUMP | AUTO MAP SPEED | hapus "..tostring(r or 0)),3)else notify("Save",q..(" masuk memory. "..tostring(u)),4)end if not G then notify("Save","Warning: gagal masuk list checkpoint",3)end end function loadOneFile(q)local c=readTextFile(q)if not c then return false end local r=decodeJSON(c)local j=basicNormalizeFrames(r)if not j then return false end local u=(tostring(q)):match("([^/\\]+)$")or tostring(q)local M=u:gsub("%.json$","")local G=M=="merged_record"or(M:lower()):find("merged",1,true)~=nil upsertCheckpoint(M,j,G,q)return true end function refreshFromFiles()local q=listSavedFiles()if not q then notify("Refresh","listfiles/readfile tidak tersedia, refresh memory saja",3)return 0 end local c=0 for q,r in ipairs(q)do local j=tostring(r)if(j:lower()):sub(-5)==".json"then if loadOneFile(j)then c=c+1 end end end refreshCheckpointMarkers()return c end V6=function()local q=0 if safeFunc(listfiles)and safeFunc(readfile)then q=refreshFromFiles()end local c=nil if safeFunc(getclipboard)then c=getclipboard elseif safeFunc(readclipboard)then c=readclipboard end if c then local r,j=pcall(function()return c()end)if r and(type(j)=="string"and#j>10)then local c=decodeJSON(j)local r=basicNormalizeFrames(c)if r then local c=getNextDefaultName()upsertCheckpoint(c,r,false,filePathForName(c))q=q+1 notify("Import","JSON clipboard masuk sebagai "..c,3)end end end b6()if q>0 then notify("Load","Berhasil load "..(tostring(q).." JSON"),3)else notify("Load","Tidak ada JSON valid ditemukan",3)end end t6=function()for q,c in ipairs(gN)do if c.path then deleteFile(c.path)else deleteFile(filePathForName(c.name))end end if safeFunc(listfiles)and safeFunc(delfile)then local q=listSavedFiles()if q then for q,c in ipairs(q)do local r=tostring(c)if(r:lower()):sub(-5)==".json"then deleteFile(r)end end end end gN={}AN=1 clearMergeDots()clearCheckpointMarkers()b6()notify("Del All","Semua checkpoint dihapus",3)end b6=function()if not BN then return end for q,c in ipairs(BN:GetChildren())do if c:IsA("Frame")or c:IsA("TextButton")then c:Destroy()end end local q=""if hN then q=(tostring(hN.Text or"")):lower()end table.sort(gN,function(q,c)return((q.order or 9999))<((c.order or 9999))end)local c=0 for r,j in ipairs(gN)do local u=tostring(j.name or"checkpoint")local M=0 if type(j.frames)=="table"then M=#j.frames end local G=q==""or(u:lower()):find(q,1,true)~=nil if G then c=c+1 local q=Instance.new("Frame")q.Name="CheckpointItem_"..u q.BackgroundColor3=Color3.fromRGB(24,24,34)q.Size=UDim2.new(1,-2,0,30)q.LayoutOrder=c q.Parent=BN addCorner(q,10)addStroke(q,Color3.fromRGB(70,70,95),.35)local r=Instance.new("TextButton")r.Name="Play_"..u r.BackgroundTransparency=1 r.TextColor3=Color3.fromRGB(245,245,255)r.Font=Enum.Font.GothamBold r.TextSize=9 r.TextXAlignment=Enum.TextXAlignment.Left r.Text=u..(" ("..(tostring(M).." frame)"))r.Size=UDim2.new(1,-64,1,0)r.Position=UDim2.fromOffset(10,0)r.Parent=q local G=Instance.new("TextButton")G.Name="Marker_"..u G.BackgroundColor3=((LN and pN==u))and Color3.fromRGB(55,120,80)or Color3.fromRGB(55,55,75)G.TextColor3=Color3.fromRGB(255,255,255)G.Font=Enum.Font.GothamBold G.TextSize=9 G.Text=((LN and pN==u))and"\226\156\147"or"M"G.Size=UDim2.fromOffset(24,22)G.Position=UDim2.new(1,-56,.5,-11)G.Parent=q addCorner(G,10)local d=Instance.new("TextButton")d.Name="Delete_"..u d.BackgroundColor3=Color3.fromRGB(170,55,70)d.TextColor3=Color3.fromRGB(255,255,255)d.Font=Enum.Font.GothamBold d.TextSize=10 d.Text="X"d.Size=UDim2.fromOffset(24,22)d.Position=UDim2.new(1,-28,.5,-11)d.Parent=q addCorner(d,10)bindButton(r,function()X6(j)end)bindButton(G,function()toggleSingleCheckpointMarker(j)b6()end)bindButton(d,function()if j.path then deleteFile(j.path)else deleteFile(filePathForName(j.name))end for q=#gN,1,-1 do if gN[q]==j or gN[q].name==j.name then table.remove(gN,q)break end end if LN then task.defer(refreshCheckpointMarkers)end b6()notify("Delete",u.." dihapus",2)end)end end if BN and FN then BN.CanvasSize=UDim2.fromOffset(0,FN.AbsoluteContentSize.Y+14)end end local ha=true local Va=1.08 local ta=.0065 local Ba=.18 local Fa=1.25 function mergeAntiSpikeFrameTime(q)return tonumber(q and q.times)or tonumber(q and q.t)or 0 end function mergeAntiSpikePairSpeed(q,c,r)local j=math.max(antiKedutHSpeed(q),antiKedutHSpeed(c),tonumber(q and q.walkSpeed)or 0,tonumber(c and c.walkSpeed)or 0,tonumber(q and q.ws)or 0,tonumber(c and c.ws)or 0,tonumber(r)or 0,k or 8)if j<=0 then j=autoMapDetectNormalRunSpeed({q,c})or Z end return math.clamp(j,k or 8,K or 500000)end function mergeAntiSpikeDistance(q,c)if not q or not c then return 0,0,0 end local r=antiKedutPos(q)local j=antiKedutPos(c)local u=j-r local M=(Vector3.new(u.X,0,u.Z)).Magnitude local G=math.abs(u.Y)return u.Magnitude,M,G end function estimateMergeJoinDt(q,c,r)if not ha then return ea or.004 end local j,u=mergeAntiSpikeDistance(q,c)j=tonumber(r)or j or 0 if j<=((PN or.35))then return ea or.004 end local M=mergeAntiSpikePairSpeed(q,c,nil)local G=math.max(M*((Va or 1.08)),1)local d=math.max(j,u or 0)/G return math.clamp(d,ta or.0065,Fa or 1.25)end function mergeAntiSpikeRetuneTimes(q)if not ha then return q end q=basicNormalizeFrames(q)or q or{}if#q<=1 then return q end local c=autoMapDetectNormalRunSpeed(q)or antiKedutBaseSpeed(q)or Z local r={}local j=0 for u,M in ipairs(q)do local G=deepCopy(M)if u==1 then j=0 else local d=q[u-1]local z=r[#r]local Y=mergeAntiSpikeFrameTime(M)-mergeAntiSpikeFrameTime(d)local P=Y local O,a,o=mergeAntiSpikeDistance(z,G)local v=G.__mergeJoin==true local b=runAntiBlingIsRunning(z)and runAntiBlingIsRunning(G)if P<=0 then P=ta or.0065 end if((v or b))and O>.005 then local q=mergeAntiSpikePairSpeed(z,G,c)local r=math.max(q*((Va or 1.08)),1)local j=a/r if v then j=math.max(j,O/r)end if P<j then P=j end if v then P=math.min(P,math.max(Fa or 1.25,j))elseif o<=1.5 then P=math.min(P,math.max(Ba or.18,j))end end P=math.max(P,ta or.0065)j=j+P end G.times=roundNumber(j,9)G.t=G.times table.insert(r,G)end return r end B6=function()local q={}for c,r in ipairs(gN)do if not r.isMerged and(r.frames and#r.frames>0)then table.insert(q,r)end end if#q<=0 then notify("Merge","Tidak ada checkpoint untuk digabung",3)return end table.sort(q,function(q,c)return((q.order or 9999))<((c.order or 9999))end)local c={}local r=0 local j=0 local u=0 local M=0 local G=nil clearMergeDots()for q,d in ipairs(q)do local z,Y=cleanFramesForSaveMerge(d.frames,true)u=u+((Y or 0))if z and#z>0 then r=r+1 z=trimIdleStartEnd(z)z=compactCleanTimes(z)local q=tonumber(z[1].times)or tonumber(z[1].t)or 0 local u=0 for Y=1,#z,1 do local P=deepCopy(z[Y])local O=tonumber(P.times)or tonumber(P.t)or 0 local a=O-q if Y>1 and a<=u then a=u+ea end if G and Y==1 then createMergeDotPath(r,d.name or("checkpoint_"..tostring(r)),tableToVec(G.position),tableToVec(P.position))local q=((tableToVec(P.position)-tableToVec(G.position))).Magnitude P.__mergeJoin=true P.__mergeJoinDistance=roundNumber(q,9)local c=tonumber(G.times)or tonumber(G.t)or(M-((ea or.004)))local u=estimateMergeJoinDt(G,P,q)M=c+math.max(u,ea or.004)a=0 if q>ON then P.seam=true j=j+1 else P.seam=false P.cutNext=false end end P.times=roundNumber(M+a,9)P.t=P.times table.insert(c,P)G=P u=a end M=((tonumber(c[#c].times)or M))+ea end end if#c<=0 then notify("Merge","Merge gagal, frame kosong",3)return end c=cleanFramesForSaveMerge(c,true)c=mergeAntiSpikeRetuneTimes(c)local d,z,Y=saveFramesToFile("merged_record",c)upsertCheckpoint("merged_record",c,true,Y)if LN then task.defer(refreshCheckpointMarkers)end local P=countMergeDots()if d then notify("Merge","merged_record bersih: "..(tostring(r)..(" file | hapus "..(tostring(u)..(" idle/kedut | cut "..(tostring(j)..(" | titik "..tostring(P))))))),4)else notify("Merge","Merge masuk memory. "..(tostring(z)..(" | titik "..tostring(P))),4)end end bindButton(L6,function()local q=true pcall(function()local c=game:GetService("Players")local r=c.LocalPlayer local j=r and r.Character if j then local c=j:FindFirstChildOfClass("Humanoid")local r=j:FindFirstChild("HumanoidRootPart")if c then c.Jump=false c.PlatformStand=false c.AutoRotate=true local r=tostring((c:GetState()).Name or"")if r=="Freefall"or r=="Jumping"or r=="FallingDown"then q=false end pcall(function()c:ChangeState(Enum.HumanoidStateType.Running)end)end if r then r.AssemblyLinearVelocity=Vector3.zero r.AssemblyAngularVelocity=Vector3.zero end end end)task.wait(.05)U6()pcall(function()local c=game:GetService("RunService")local r=game:GetService("Players")local j=r.LocalPlayer local u=os.clock()+.35 local M M=addConnection(c.Heartbeat:Connect(function()if os.clock()>=u or not ZN then if M then M:Disconnect()M=nil end return end local c=j and j.Character if not c then return end local r=c:FindFirstChildOfClass("Humanoid")local G=c:FindFirstChild("HumanoidRootPart")if r then if r.Jump then r.Jump=false end local c=tostring((r:GetState()).Name or"")if q and((c=="Jumping"or c=="Freefall"))then pcall(function()r:ChangeState(Enum.HumanoidStateType.Running)end)end end if G and q then local q=G.AssemblyLinearVelocity if q.Y>0 then G.AssemblyLinearVelocity=Vector3.new(q.X,0,q.Z)end end end))end)end)bindButton(p6,function()setSpeedFromCurrent()end)bindButton(I6,function()x6(true)end)bindButton(Q6,function()h6()end)bindButton(wN,function()toggleCheckpointMarkersAll()b6()end)bindButton(Z6,function()t6()end)bindButton(N6,function()V6()end)bindButton(S6,function()local q=refreshFromFiles()b6()notify("Refresh","Refresh selesai. File terbaca: "..tostring(q),3)end)bindButton(s6,function()B6()end)addConnection((hN:GetPropertyChangedSignal("Text")):Connect(function()b6()end))addConnection(tN.FocusLost:Connect(function()local q=tostring(tN and tN.Text or"")q=q:gsub(",",".")q=q:gsub("^%s+","")q=q:gsub("%s+$","")if q==""or q:lower()=="auto"then if tN then tN.Text="AUTO"end notify("Speed","AUTO MAP aktif. Playback ikut speed asli JSON/map.",2)return end local c=setSyncBaseSpeed(q,true)notify("Speed","MANUAL speed: "..(tostring(c).." stud/s"),2)end))bindButton(ua,function()T6()end)bindButton(Ma,function()e6()end)bindButton(A6,function()xN.Visible=false UN.Visible=true end)bindButton(UN,function()UN.Visible=false xN.Visible=true end)bindButton(f6,function()cleanup()end)if b6 then b6()end task.spawn(function()task.wait(.5)ensureFolder()if safeFunc(listfiles)and safeFunc(readfile)then local q=refreshFromFiles()if b6 then b6()end if q>0 then notify("MIKSU TRG Recorder","Auto load "..(tostring(q).." JSON"),3)else notify("MIKSU TRG Recorder","Siap digunakan",2)end else notify("MIKSU TRG Recorder","Siap. File API tidak lengkap, memory mode aktif.",4)end end)
+
+
+local ENV = _G
+pcall(function()
+    if getgenv then
+        ENV = getgenv()
+    end
+end)
+
+if ENV.__ONIUM_RECORDER_CLEANUP then
+    pcall(ENV.__ONIUM_RECORDER_CLEANUP)
+end
+
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
+local HttpService = game:GetService("HttpService")
+local CoreGui = game:GetService("CoreGui")
+
+local LocalPlayer = Players.LocalPlayer
+local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
+
+local m_ = "ONIUM_RECORDER"
+local ww = "rbxassetid://130280202431400"
+local fl = true
+local ph = true
+local xguu = true
+local iy = 0.004
+
+local rmh = true
+local ejd = true
+local trxt = false
+local gf = true
+local ex = 0.001
+
+local rk = true
+local sli = true
+local dxps = 6
+local jpm = 0.94
+local qeuz = 1.10
+local sygc = 0.045
+local eu = true
+local uek_ = 0.0065
+local mjr = 0.140
+
+local fdfs = true
+local fy = 0.0085
+local uc = 0.0045
+local _sj = 0.10
+local dw = 0.055
+local _gmw = 0.15
+
+local rp = true
+local vgol = 0.010
+local f_jr = 0.045
+local klt = 0.0085
+local mdld = 0.030
+local azq = 0.055
+local zv = 0.85
+local qfq = 7.5
+local mak = -5.5
+local va = 2
+
+local mpm = 8
+local slw = 500000
+local zudm = 16
+
+local _d = 45
+local wz = 5.331189155578613
+
+local akoq = 0.09
+local ymaz = 0.02
+local ug_y = 0.15
+
+local ax = 0.07
+local urke = 0.10
+
+local l_ = 0.85
+local lmg = 0.04
+
+local kkuq = 18
+local _lc = 0.12
+
+local df_u = 1.12
+
+local ierz = 0.006
+local gxt = 0.18
+
+local wnw = 0.12
+local feb = 0.035
+local wcpy = 2.5
+
+local tuxi = 10
+local xil = 0.35
+local vqo = 10
+local zhf = 80
+
+local io = 9
+
+local wq = 2.5
+local ofya = math.max(5, math.floor(wq / iy))
+
+local iri
+local _px
+local MiniLogo
+local sw
+local moq
+
+local chnu
+local dxay
+local speedBox
+local iq
+local fzr
+local wm
+local fft
+local w_uw
+local fqh
+
+local bu = {}
+local obr = 1
+
+local lqxi = nil
+local snvn = true
+local rc = 12
+local _s = 0.46
+local xw = 0.35
+
+local wb = false
+local xu = nil
+local qtjy = 0
+local pdd = 6
+local ipr = 0.42
+local da = 1.25
+local rf = 8
+
+CP_MARKER_LABEL_MAX_DISTANCE = 45
+CP_MARKER_VISIBLE_DISTANCE = 70
+CP_MARKER_CULL_INTERVAL = 0.35
+
+local xbk = {}
+local bzg_ = {}
+
+local zd = false
+local vft = false
+local cek = false
+local pa = 0
+local ku = false
+local fg = 0
+
+local nee = 0
+local bmj = true
+local ucuz = false
+
+local jckq = zudm
+local hjo = zudm
+
+local zu = nil
+local eh = {}
+
+local ye = nil
+local duma = 0
+
+local avbq = nil
+local kkvu = nil
+local pc = ""
+
+local tgb = nil
+local gktx = false
+
+function hasEquippedToolSafe(char)
+    char = char or LocalPlayer.Character
+    if not char then
+        return false
+    end
+
+    for _, obj in ipairs(char:GetChildren()) do
+        if obj:IsA("Tool") then
+            pc = obj.Name
+            return true
+        end
+    end
+
+    return false
+end
+
+function captureMapSpeedBeforePlayback()
+    local char, hum = getCharacter()
+    if not hum then
+        return
+    end
+
+    tgb = tonumber(hum.WalkSpeed) or zudm
+    gktx = hasEquippedToolSafe(char)
+end
+
+local yc
+local ky
+local wf
+local brd
+local le
+local on
+local mq
+local ix
+local _l
+local zkk
+
+function addConnection(c)
+    if c then
+        table.insert(eh, c)
+    end
+    return c
+end
+
+function cleanup()
+    pcall(function()
+        if zu then
+            zu:Disconnect()
+            zu = nil
+        end
+    end)
+
+    for _, c in ipairs(eh) do
+        pcall(function()
+            c:Disconnect()
+        end)
+    end
+
+    fg = fg + 1
+    ku = false
+    zd = false
+    vft = false
+
+    nee = 0
+    bmj = true
+    ucuz = false
+
+    pcall(function()
+        if lqxi then
+            lqxi:Destroy()
+            lqxi = nil
+        end
+
+        local old = workspace:FindFirstChild("ONIUM_MERGE_DOTS")
+        if old then
+            old:Destroy()
+        end
+
+        local oldCp = workspace:FindFirstChild("ONIUM_CP_MARKERS")
+        if oldCp then
+            oldCp:Destroy()
+        end
+    end)
+
+    pcall(function()
+        if iri then
+            iri:Destroy()
+        end
+    end)
+end
+
+ENV.__ONIUM_RECORDER_CLEANUP = cleanup
+
+function roundNumber(n, dec)
+    dec = dec or 3
+    local mult = 10 ^ dec
+    return math.floor((tonumber(n) or 0) * mult + 0.5) / mult
+end
+
+function parseSpeedValue(raw, fallback)
+    raw = tostring(raw or fallback or zudm)
+    raw = raw:gsub(",", ".")
+    raw = raw:gsub("[^%d%.%-]", "")
+
+    local spd = tonumber(raw) or tonumber(fallback) or zudm
+    spd = math.clamp(spd, mpm, slw)
+
+    return roundNumber(spd, 1)
+end
+
+function setSyncBaseSpeed(value, updateBox)
+    local spd = parseSpeedValue(value, hjo or jckq or zudm)
+
+    jckq = spd
+    hjo = spd
+
+    if updateBox and speedBox then
+        speedBox.Text = tostring(spd)
+    end
+
+    return spd
+end
+
+function trimText(s)
+    s = tostring(s or "")
+    s = s:gsub("^%s+", "")
+    s = s:gsub("%s+$", "")
+    return s
+end
+
+function cleanFileName(s)
+    s = trimText(s)
+    s = s:gsub("[^%w_%-]", "_")
+    if s == "" then
+        s = "checkpoint"
+    end
+    return s
+end
+
+function vecToTable(v)
+
+    return {
+        x = roundNumber(v.X, 9),
+        y = roundNumber(v.Y, 9),
+        z = roundNumber(v.Z, 9)
+    }
+end
+
+function tableToVec(t)
+    if type(t) ~= "table" then
+        return Vector3.new(0, 0, 0)
+    end
+
+    return Vector3.new(
+        tonumber(t.x) or 0,
+        tonumber(t.y) or 0,
+        tonumber(t.z) or 0
+    )
+end
+
+function horizontalDistance(a, b)
+    return Vector3.new(a.X - b.X, 0, a.Z - b.Z).Magnitude
+end
+
+function deepCopy(t)
+    if type(t) ~= "table" then
+        return t
+    end
+
+    local copy = {}
+    for k, v in pairs(t) do
+        copy[k] = deepCopy(v)
+    end
+    return copy
+end
+
+function getCharacter()
+    local char = LocalPlayer.Character
+    if not char then
+        char = LocalPlayer.CharacterAdded:Wait()
+    end
+
+    local hum = char:FindFirstChildOfClass("Humanoid")
+    local hrp = char:FindFirstChild("HumanoidRootPart")
+
+    if not hum then
+        hum = char:WaitForChild("Humanoid", 5)
+    end
+
+    if not hrp then
+        hrp = char:WaitForChild("HumanoidRootPart", 5)
+    end
+
+    return char, hum, hrp
+end
+
+function restoreCharacterControl(speedOverride)
+    local char, hum, hrp = getCharacter()
+
+    local uro = tonumber(speedOverride)
+        or tonumber(tgb)
+        or tonumber(avbq)
+        or tonumber(hum and hum.WalkSpeed)
+        or zudm
+
+    local toolNow = hasEquippedToolSafe(char)
+
+    if toolNow then
+        if tonumber(hum and hum.WalkSpeed) then
+            uro = math.max(uro, tonumber(hum.WalkSpeed))
+        end
+
+        if tonumber(kkvu) then
+            uro = math.max(uro, tonumber(kkvu))
+        end
+    else
+        uro = tonumber(speedOverride)
+            or tonumber(tgb)
+            or tonumber(avbq)
+            or zudm
+    end
+
+    uro = math.clamp(uro, mpm, slw)
+
+    local function applyRestore()
+        char, hum, hrp = getCharacter()
+        local wsyn = hasEquippedToolSafe(char)
+
+        if hum then
+            pcall(function()
+                hum.AutoRotate = true
+                hum.PlatformStand = false
+                hum.Sit = false
+
+                if wsyn then
+
+                    if (tonumber(hum.WalkSpeed) or 0) < uro - 0.1 then
+                        hum.WalkSpeed = uro
+                    end
+                else
+
+                    hum.WalkSpeed = uro
+                end
+
+                hum:Move(Vector3.new(0, 0, 0), true)
+                hum:ChangeState(Enum.HumanoidStateType.Running)
+            end)
+        end
+
+        if hrp then
+            pcall(function()
+                hrp.AssemblyAngularVelocity = Vector3.new(0, 0, 0)
+            end)
+        end
+    end
+
+    applyRestore()
+
+    task.delay(0.05, applyRestore)
+    task.delay(0.15, applyRestore)
+
+    if toolNow then
+        task.delay(0.35, applyRestore)
+    end
+end
+function getEquippedToolName(char)
+    char = char or LocalPlayer.Character
+    if not char then
+        return ""
+    end
+
+    for _, obj in ipairs(char:GetChildren()) do
+        if obj:IsA("Tool") then
+            return obj.Name
+        end
+    end
+
+    return ""
+end
+
+function getHumanoidStateName(hum)
+    local state = "Unknown"
+
+    pcall(function()
+        state = tostring(hum:GetState())
+        state = state:gsub("Enum.HumanoidStateType.", "")
+    end)
+
+    return state
+end
+
+function xswd(state)
+    state = tostring(state or "")
+    return state == "Jumping"
+        or state == "Freefall"
+        or state == "FallingDown"
+        or state == "Climbing"
+        or state == "Swimming"
+end
+
+function isMobileTouchDeviceSafe()
+    local ok, result = pcall(function()
+        local UIS = game:GetService("UserInputService")
+        return UIS.TouchEnabled and not UIS.KeyboardEnabled
+    end)
+    return ok and result == true
+end
+
+function getHumanoidFloorMaterialNameSafe(hum)
+    local ok, mat = pcall(function()
+        return hum and hum.FloorMaterial
+    end)
+
+    if ok and mat then
+        return tostring(mat):gsub("Enum.Material.", "")
+    end
+
+    return "Unknown"
+end
+
+function isGroundFloorMaterialName(name)
+    name = tostring(name or "")
+    name = name:gsub("Enum.Material.", "")
+    return name ~= "" and name ~= "Air" and name ~= "Unknown" and name ~= "nil"
+end
+
+function mobileDeltaFrameHasGroundData(fr)
+    if type(fr) ~= "table" or type(fr.ground) ~= "table" then
+        return false
+    end
+
+    local g = fr.ground
+    local key = tostring(g.path or g.name or "")
+    return key ~= ""
+end
+
+function mobileDeltaFrameHasGroundContact(fr)
+    if type(fr) ~= "table" then
+        return false
+    end
+
+    if fr.grounded == true or fr.isGrounded == true then
+        return true
+    end
+
+    if isGroundFloorMaterialName(fr.floorMaterial or fr.floor or fr.floorMat) then
+        return true
+    end
+
+    local st = tostring(fr.states or fr.state or "")
+    if mobileDeltaFrameHasGroundData(fr)
+        and (st == "" or st == "Running" or st == "Landed" or st == "Walking" or st == "Standing" or st == "None" or st == "Unknown")
+    then
+        return true
+    end
+
+    return false
+end
+
+function mobileDeltaVelocityConfirmedAir(frames, index, yv)
+    if type(frames) ~= "table" then
+        return false
+    end
+
+    local need = math.max(1, tonumber(va) or 2)
+    local upward = (tonumber(yv) or 0) >= (qfq or 7.5)
+    local downward = (tonumber(yv) or 0) <= (mak or -5.5)
+
+    if not upward and not downward then
+        return false
+    end
+
+    local count = 0
+    for j = math.max(1, index - 1), math.min(#frames, index + 1) do
+        local fr = frames[j]
+        if type(fr) == "table" and not mobileDeltaFrameHasGroundContact(fr) then
+            local vy = tableToVec(fr.city).Y
+            if upward and vy >= (qfq or 7.5) then
+                count = count + 1
+            elseif downward and vy <= (mak or -5.5) then
+                count = count + 1
+            end
+        end
+    end
+
+    return count >= need
+end
+
+function frameIsMobileDeltaSafe(fr)
+    if type(fr) ~= "table" then
+        return false
+    end
+
+    return fr.mvi == true
+        or fr.isMobileRecord == true
+        or tostring(fr.inputDevice or "") == "MobileDelta"
+        or tostring(fr.executorDevice or "") == "DeltaAndroid"
+end
+
+function framesLookMobileDeltaSafe(frames)
+    if type(frames) ~= "table" or #frames <= 0 then
+        return false
+    end
+
+    local btcg = 0
+    local noShift = 0
+    local total = 0
+    local dtSum = 0
+    local dtCount = 0
+    local lastT = nil
+
+    for _, fr in ipairs(frames) do
+        if type(fr) == "table" then
+            total = total + 1
+            if frameIsMobileDeltaSafe(fr) then
+                btcg = btcg + 1
+            end
+            if fr.sxzf == true or tostring(fr.ybk or "") == "AutoRotate" then
+                noShift = noShift + 1
+            end
+
+            local t = tonumber(fr.times) or tonumber(fr.t)
+            if t and lastT then
+                local dt = t - lastT
+                if dt > 0 and dt < 0.25 then
+                    dtSum = dtSum + dt
+                    dtCount = dtCount + 1
+                end
+            end
+            if t then
+                lastT = t
+            end
+        end
+    end
+
+    if total <= 0 then
+        return false
+    end
+
+    if btcg >= math.max(1, math.floor(total * 0.10)) then
+        return true
+    end
+
+    local avgDt = dtCount > 0 and (dtSum / dtCount) or 0
+    return noShift >= math.max(5, math.floor(total * 0.72)) and avgDt >= 0.018
+end
+
+function mobileDeltaFixAirStateByVelocity(frames)
+    if not rp or not framesLookMobileDeltaSafe(frames) then
+        return frames or {}
+    end
+
+    local out = deepCopy(frames or {})
+    for i, fr in ipairs(out) do
+        if type(fr) == "table" then
+            local st = tostring(fr.states or fr.state or "")
+            local yv = tableToVec(fr.city).Y
+            local grounded = mobileDeltaFrameHasGroundContact(fr)
+
+            if st ~= "Climbing" and st ~= "Swimming" then
+                if grounded then
+
+                    if st == "Jumping" or st == "Freefall" or st == "FallingDown" or fr.jump == true then
+                        fr.states = "Running"
+                        fr.jump = false
+                    end
+                else
+
+                    local snca = st == "Jumping" or st == "Freefall" or st == "FallingDown"
+                    local pgb = mobileDeltaVelocityConfirmedAir(out, i, yv)
+
+                    if snca or pgb then
+                        if yv >= (qfq or 7.5) then
+                            fr.states = "Jumping"
+                            fr.jump = true
+                        elseif yv <= (mak or -5.5) then
+                            fr.states = "Freefall"
+                            fr.jump = false
+                        elseif snca then
+                            if st == "FallingDown" then
+                                fr.states = "Freefall"
+                            end
+                        end
+                    end
+                end
+            end
+        end
+    end
+
+    return out
+end
+
+function getSafeFullName(inst)
+    local ok, result = pcall(function()
+        return inst:GetFullName()
+    end)
+
+    if ok and result then
+        return tostring(result)
+    end
+
+    return tostring(inst and inst.Name or "Unknown")
+end
+
+function normalizeGroundInfo(g)
+    if type(g) ~= "table" then
+        return nil
+    end
+
+    return {
+        name = tostring(g.name or ""),
+        class = tostring(g.class or ""),
+        path = tostring(g.path or g.name or ""),
+        position = {
+            x = tonumber(g.position and g.position.x) or 0,
+            y = tonumber(g.position and g.position.y) or 0,
+            z = tonumber(g.position and g.position.z) or 0
+        },
+        hitPosition = {
+            x = tonumber(g.hitPosition and g.hitPosition.x) or 0,
+            y = tonumber(g.hitPosition and g.hitPosition.y) or 0,
+            z = tonumber(g.hitPosition and g.hitPosition.z) or 0
+        }
+    }
+end
+
+function getGroundInfo(hrp)
+    if not hrp then
+        return nil
+    end
+
+    local char = LocalPlayer.Character
+    local params = RaycastParams.new()
+
+    pcall(function()
+        params.FilterType = Enum.RaycastFilterType.Blacklist
+    end)
+
+    pcall(function()
+        params.FilterDescendantsInstances = char and { char } or {}
+    end)
+
+    pcall(function()
+        params.IgnoreWater = true
+    end)
+
+    local ok, result = pcall(function()
+        return workspace:Raycast(
+            hrp.Position,
+            Vector3.new(0, -io, 0),
+            params
+        )
+    end)
+
+    if not ok or not result or not result.Instance then
+        return nil
+    end
+
+    local inst = result.Instance
+    local instPos = Vector3.new(0, 0, 0)
+
+    pcall(function()
+        instPos = inst.Position
+    end)
+
+    return {
+        name = tostring(inst.Name),
+        class = tostring(inst.ClassName),
+        path = getSafeFullName(inst),
+        position = vecToTable(instPos),
+        hitPosition = vecToTable(result.Position)
+    }
+end
+
+function groundKeyFromFrame(fr)
+    if type(fr) ~= "table" or type(fr.ground) ~= "table" then
+        return nil
+    end
+
+    local key = tostring(fr.ground.path or fr.ground.name or "")
+    if key == "" then
+        return nil
+    end
+
+    return key
+end
+
+local yfsq = 2
+
+function getFrameYVelocity(fr)
+    if type(fr) ~= "table" then
+        return 0
+    end
+
+    local city = tableToVec(fr.city)
+    return city.Y or 0
+end
+
+function isRollbackAirFrame(fr)
+    if type(fr) ~= "table" then
+        return false
+    end
+
+    local st = tostring(fr.states or fr.state or "")
+    local yVel = getFrameYVelocity(fr)
+    local fbv = groundKeyFromFrame(fr) ~= nil
+
+    if fr.jump == true
+        or st == "Jumping"
+        or st == "Freefall"
+        or st == "FallingDown"
+    then
+        return true
+    end
+
+    if not fbv and math.abs(yVel) > 1.5 then
+        return true
+    end
+
+    return false
+end
+
+function isRollbackGroundFrame(fr)
+    if type(fr) ~= "table" then
+        return false
+    end
+
+    if isRollbackAirFrame(fr) then
+        return false
+    end
+
+    local st = tostring(fr.states or fr.state or "")
+
+    if st == "Climbing" or st == "Swimming" then
+        return false
+    end
+
+    if groundKeyFromFrame(fr) ~= nil then
+        return true
+    end
+
+    if st == "Running" or st == "Landed" then
+        return true
+    end
+
+    return false
+end
+
+function findRollbackBeforeJumpIndex()
+    local n = #xbk
+    if n <= 2 then
+        return nil, nil
+    end
+
+    local lu = nil
+    for i = n, 1, -1 do
+        if isRollbackAirFrame(xbk[i]) then
+            lu = i
+            break
+        end
+    end
+
+    if not lu then
+        return nil, nil
+    end
+
+    local airStart = lu
+    while airStart > 1 and isRollbackAirFrame(xbk[airStart - 1]) do
+        airStart = airStart - 1
+    end
+
+    local jy = nil
+    for i = airStart - 1, 1, -1 do
+        if isRollbackGroundFrame(xbk[i]) then
+            jy = i
+            break
+        end
+    end
+
+    if not jy then
+        return nil, nil
+    end
+
+    local zrar = math.max(1, jy - yfsq)
+
+    for i = zrar, jy do
+        if isRollbackGroundFrame(xbk[i]) then
+            return i, "sebelum_lompat"
+        end
+    end
+
+    return jy, "sebelum_lompat"
+end
+
+function formatTime(t)
+    t = tonumber(t) or 0
+    local minutes = math.floor(t / 60)
+    local seconds = t - (minutes * 60)
+    return string.format("%02d:%05.2f", minutes, seconds)
+end
+
+function notify(title, text, sec)
+    title = tostring(title or "ONIUM")
+    text = tostring(text or "")
+    sec = sec or 2
+
+    warn("[ONIUM Recorder] " .. title .. " - " .. text)
+
+    if not moq then
+        return
+    end
+
+    moq.Text = title .. " | " .. text
+    moq.Visible = true
+
+    task.delay(sec, function()
+        if moq and moq.Text == title .. " | " .. text then
+            moq.Visible = false
+        end
+    end)
+end
+
+function clearMergeDots()
+    pcall(function()
+        if lqxi then
+            lqxi:Destroy()
+            lqxi = nil
+        end
+
+        local old = workspace:FindFirstChild("ONIUM_MERGE_DOTS")
+        if old then
+            old:Destroy()
+        end
+    end)
+end
+
+function getMergeDotFolder()
+    if lqxi and lqxi.Parent then
+        return lqxi
+    end
+
+    local old = workspace:FindFirstChild("ONIUM_MERGE_DOTS")
+    if old then
+        old:Destroy()
+    end
+
+    lqxi = Instance.new("Folder")
+    lqxi.Name = "ONIUM_MERGE_DOTS"
+    lqxi.Parent = workspace
+
+    return lqxi
+end
+
+function groundPositionForDot(pos)
+    local origin = pos + Vector3.new(0, 8, 0)
+    local cnd = Vector3.new(0, -60, 0)
+
+    local params = RaycastParams.new()
+    pcall(function()
+        params.FilterType = Enum.RaycastFilterType.Blacklist
+        params.FilterDescendantsInstances = LocalPlayer.Character and { LocalPlayer.Character } or {}
+        params.IgnoreWater = true
+    end)
+
+    local ok, result = pcall(function()
+        return workspace:Raycast(origin, cnd, params)
+    end)
+
+    if ok and result and result.Position then
+        return result.Position + Vector3.new(0, xw, 0)
+    end
+
+    return pos + Vector3.new(0, xw, 0)
+end
+
+function makeBillboardLabel(parent, text, color)
+    local bill = Instance.new("BillboardGui")
+    bill.Name = "ONIUM_Label"
+    bill.Size = UDim2.fromOffset(105, 26)
+    bill.StudsOffset = Vector3.new(0, 1.7, 0)
+    bill.AlwaysOnTop = false
+    bill.MaxDistance = CP_MARKER_LABEL_MAX_DISTANCE
+    bill.Parent = parent
+
+    local bg = Instance.new("Frame")
+    bg.BackgroundColor3 = Color3.fromRGB(20, 20, 25)
+    bg.BackgroundTransparency = 0.15
+    bg.Size = UDim2.new(1, 0, 1, 0)
+    bg.Parent = bill
+    pcall(function()
+        local c = Instance.new("UICorner")
+        c.CornerRadius = UDim.new(0, 8)
+        c.Parent = bg
+        local st = Instance.new("UIStroke")
+        st.Color = color or Color3.fromRGB(255, 230, 60)
+        st.Thickness = 1
+        st.Transparency = 0.1
+        st.Parent = bg
+    end)
+
+    local lbl = Instance.new("TextLabel")
+    lbl.BackgroundTransparency = 1
+    lbl.Text = tostring(text or "CP")
+    lbl.TextColor3 = color or Color3.fromRGB(255, 230, 60)
+    lbl.Font = Enum.Font.GothamBold
+    lbl.TextSize = 9
+    lbl.TextStrokeTransparency = 0.25
+    lbl.Size = UDim2.new(1, -8, 1, 0)
+    lbl.Position = UDim2.fromOffset(4, 0)
+    lbl.Parent = bg
+
+    return bill
+end
+
+function createMarkerPart(folder, name, pos, color, size, shape)
+    local p = Instance.new("Part")
+    p.Name = tostring(name or "ONIUM_MARK")
+    p.Anchored = true
+    p.CanCollide = false
+    p.CanTouch = false
+    p.Material = Enum.Material.Neon
+    p.Color = color or Color3.fromRGB(255, 230, 60)
+    p.Size = size or Vector3.new(ipr, ipr, ipr)
+    p.Shape = shape or Enum.PartType.Ball
+    p.CFrame = CFrame.new(pos)
+    pcall(function() p:SetAttribute("BaseTransparency", p.Transparency) end)
+    p.Parent = folder
+    pcall(function()
+        p.CanQuery = false
+    end)
+    return p
+end
+
+function createMergeDotPath(joinNumber, cpName, previousPos, joinPos)
+    if not snvn then
+        return
+    end
+
+    if typeof(previousPos) ~= "Vector3" then
+        previousPos = tableToVec(previousPos)
+    end
+
+    if typeof(joinPos) ~= "Vector3" then
+        joinPos = tableToVec(joinPos)
+    end
+
+    if previousPos.Magnitude <= 0 or joinPos.Magnitude <= 0 then
+        return
+    end
+
+    local folder = getMergeDotFolder()
+    local dist = (joinPos - previousPos).Magnitude
+
+    local dotCount = rc
+    if dist < 1 then
+        dotCount = 2
+    elseif dist > 30 then
+        dotCount = 18
+    end
+
+    local firstDot = nil
+    local lastDot = nil
+
+    for n = 1, dotCount do
+        local alpha = n / dotCount
+        local rawPos = previousPos:Lerp(joinPos, alpha)
+        local dotPos = groundPositionForDot(rawPos)
+        local sizeMul = (n == 1 or n == dotCount) and 1.35 or 1
+
+        local dot = createMarkerPart(
+            folder,
+            "JOIN_DOT_CP_" .. tostring(joinNumber) .. "_" .. tostring(n),
+            dotPos,
+            Color3.fromRGB(255, 230, 60),
+            Vector3.new(_s * sizeMul, _s * sizeMul, _s * sizeMul),
+            Enum.PartType.Ball
+        )
+
+        if not firstDot then
+            firstDot = dot
+        end
+        lastDot = dot
+    end
+
+    if lastDot then
+        makeBillboardLabel(
+            lastDot,
+            "SAMBUNG CP " .. tostring(joinNumber) .. "\n" .. tostring(cpName or "checkpoint"),
+            Color3.fromRGB(255, 230, 60)
+        )
+    end
+
+    if firstDot and lastDot and firstDot ~= lastDot then
+        pcall(function()
+            local a0 = Instance.new("Attachment")
+            a0.Name = "ONIUM_BEAM_A"
+            a0.Parent = firstDot
+            local a1 = Instance.new("Attachment")
+            a1.Name = "ONIUM_BEAM_B"
+            a1.Parent = lastDot
+            local beam = Instance.new("Beam")
+            beam.Name = "ONIUM_JOIN_BEAM"
+            beam.Attachment0 = a0
+            beam.Attachment1 = a1
+            beam.Width0 = 0.12
+            beam.Width1 = 0.12
+            beam.FaceCamera = true
+            beam.LightEmission = 1
+            beam.Transparency = NumberSequence.new(0.2)
+            beam.Color = ColorSequence.new(Color3.fromRGB(255, 230, 60))
+            beam.Parent = firstDot
+        end)
+    end
+end
+
+function clearCheckpointMarkers()
+
+    qtjy = qtjy + 1
+
+    pcall(function()
+        local old = workspace:FindFirstChild("ONIUM_CP_MARKERS")
+        if old then
+            old:Destroy()
+        end
+    end)
+end
+
+function getCheckpointMarkerFolder()
+    local old = workspace:FindFirstChild("ONIUM_CP_MARKERS")
+    if old then
+        return old
+    end
+
+    local folder = Instance.new("Folder")
+    folder.Name = "ONIUM_CP_MARKERS"
+    folder.Parent = workspace
+    return folder
+end
+
+function getFramePosSafe(fr)
+    if type(fr) ~= "table" then
+        return nil
+    end
+    local pos = tableToVec(fr.position)
+    if pos.Magnitude <= 0 then
+        return nil
+    end
+    return pos
+end
+
+function startCheckpointMarkerDistanceCuller(folder)
+    if not folder then
+        return
+    end
+
+    qtjy = qtjy + 1
+    local myToken = qtjy
+
+    task.spawn(function()
+        local bcbn = folder
+        while myToken == qtjy and bcbn and bcbn.Parent do
+            local _, _, hrp = getCharacter()
+            if hrp then
+                local myPos = hrp.Position
+                for _, obj in ipairs(bcbn:GetDescendants()) do
+                    if obj:IsA("BasePart") then
+                        local visible = (obj.Position - myPos).Magnitude <= CP_MARKER_VISIBLE_DISTANCE
+                        obj.Transparency = visible and (tonumber(obj:GetAttribute("BaseTransparency")) or 0) or 1
+                    elseif obj:IsA("Beam") then
+                        local a0 = obj.Attachment0
+                        local a1 = obj.Attachment1
+                        local p0 = a0 and a0.WorldPosition
+                        local p1 = a1 and a1.WorldPosition
+                        local visible = false
+                        if p0 and p1 then
+                            local mid = (p0 + p1) * 0.5
+                            visible = (p0 - myPos).Magnitude <= CP_MARKER_VISIBLE_DISTANCE
+                                or (p1 - myPos).Magnitude <= CP_MARKER_VISIBLE_DISTANCE
+                                or (mid - myPos).Magnitude <= CP_MARKER_VISIBLE_DISTANCE
+                        end
+                        obj.Enabled = visible
+                    end
+                end
+            end
+            task.wait(CP_MARKER_CULL_INTERVAL)
+        end
+    end)
+end
+
+function createCheckpointMarker(cp, cpIndex)
+    if not wb or not cp or type(cp.frames) ~= "table" or #cp.frames <= 0 then
+        return
+    end
+
+    local folder = getCheckpointMarkerFolder()
+    local frames = cp.frames
+    local cpName = tostring(cp.name or ("checkpoint_" .. tostring(cpIndex)))
+    local startPos = getFramePosSafe(frames[1])
+    local endPos = getFramePosSafe(frames[#frames])
+
+    if not startPos or not endPos then
+        return
+    end
+
+    local uoe = groundPositionForDot(startPos) + Vector3.new(0, da, 0)
+    local kf = groundPositionForDot(endPos) + Vector3.new(0, da, 0)
+
+    local zfz = createMarkerPart(
+        folder,
+        "CP_" .. tostring(cpIndex) .. "_START",
+        uoe,
+        Color3.fromRGB(70, 255, 130),
+        Vector3.new(ipr, ipr, ipr),
+        Enum.PartType.Ball
+    )
+    makeBillboardLabel(zfz, "CP " .. tostring(cpIndex) .. " START\n" .. cpName, Color3.fromRGB(70, 255, 130))
+
+    local endPart = createMarkerPart(
+        folder,
+        "CP_" .. tostring(cpIndex) .. "_END",
+        kf,
+        Color3.fromRGB(255, 95, 95),
+        Vector3.new(ipr, ipr, ipr),
+        Enum.PartType.Ball
+    )
+    makeBillboardLabel(endPart, "CP " .. tostring(cpIndex) .. " END", Color3.fromRGB(255, 95, 95))
+
+    local count = math.min(rf, math.max(2, pdd))
+    for n = 1, count do
+        local idx = math.floor(1 + ((#frames - 1) * (n - 1) / math.max(count - 1, 1)))
+        local pos = getFramePosSafe(frames[idx])
+        if pos then
+            local dotPos = groundPositionForDot(pos) + Vector3.new(0, 0.2, 0)
+            local dot = createMarkerPart(
+                folder,
+                "CP_" .. tostring(cpIndex) .. "_PATH_" .. tostring(n),
+                dotPos,
+                Color3.fromRGB(80, 170, 255),
+                Vector3.new(ipr * 0.62, ipr * 0.62, ipr * 0.62),
+                Enum.PartType.Ball
+            )
+            if n == math.ceil(count / 2) then
+                makeBillboardLabel(dot, "PATH CP " .. tostring(cpIndex), Color3.fromRGB(80, 170, 255))
+            end
+        end
+    end
+end
+
+function refreshCheckpointMarkers()
+    clearCheckpointMarkers()
+
+    if not wb then
+        return
+    end
+
+    local h_a = xu and tostring(xu) or nil
+    local normal = {}
+
+    for _, cp in ipairs(bu or {}) do
+        if cp and not cp.isMerged and type(cp.frames) == "table" and #cp.frames > 0 then
+            local cpName = tostring(cp.name or "")
+            if not h_a or h_a == "" or cpName == h_a then
+                table.insert(normal, cp)
+            end
+        end
+    end
+
+    if #normal <= 0 then
+        return
+    end
+
+    table.sort(normal, function(a, b)
+        return (a.order or 9999) < (b.order or 9999)
+    end)
+
+    for i, cp in ipairs(normal) do
+        createCheckpointMarker(cp, i)
+
+        if i % 2 == 0 then
+            task.wait()
+        end
+    end
+
+    startCheckpointMarkerDistanceCuller(workspace:FindFirstChild("ONIUM_CP_MARKERS"))
+end
+
+function updateCpMarkerToggleButton()
+    if not fqh then
+        return
+    end
+
+    if wb then
+        if xu then
+            fqh.Text = "CP 1"
+        else
+            fqh.Text = "CP ON"
+        end
+        fqh.BackgroundColor3 = Color3.fromRGB(55, 120, 80)
+    else
+        fqh.Text = "CP OFF"
+        fqh.BackgroundColor3 = Color3.fromRGB(55, 55, 70)
+    end
+end
+
+function setCheckpointMarkerMode(enabled, h_a, quiet)
+    wb = enabled == true
+
+    if wb then
+        xu = h_a and tostring(h_a) or nil
+        task.defer(refreshCheckpointMarkers)
+    else
+        xu = nil
+        clearCheckpointMarkers()
+    end
+
+    updateCpMarkerToggleButton()
+
+    if not quiet then
+        if wb then
+            if xu then
+                notify("CP Marker", "ON hanya: " .. tostring(xu), 2)
+            else
+                notify("CP Marker", "ON semua checkpoint", 2)
+            end
+        else
+            notify("CP Marker", "OFF. Save jadi lebih ringan.", 2)
+        end
+    end
+end
+
+function toggleCheckpointMarkersAll()
+    if wb and not xu then
+        setCheckpointMarkerMode(false, nil, false)
+    else
+        setCheckpointMarkerMode(true, nil, false)
+    end
+end
+
+function toggleSingleCheckpointMarker(cp)
+    local name = tostring(cp and cp.name or "")
+    if name == "" then
+        return
+    end
+
+    if wb and xu == name then
+        setCheckpointMarkerMode(false, nil, false)
+    else
+        setCheckpointMarkerMode(true, name, false)
+    end
+end
+
+function countMergeDots()
+    local folder = workspace:FindFirstChild("ONIUM_MERGE_DOTS")
+    local count = 0
+
+    if folder then
+        for _, obj in ipairs(folder:GetChildren()) do
+            if tostring(obj.Name):find("JOIN_DOT_CP_") then
+                count = count + 1
+            end
+        end
+    end
+
+    return count
+end
+
+function smoothStep(a)
+    a = math.clamp(a, 0, 1)
+    return a * a * (3 - 2 * a)
+end
+
+function lerpAngle(a, b, t)
+    local delta = b - a
+    delta = math.atan(math.sin(delta), math.cos(delta))
+    return a + delta * t
+end
+
+function detectNoShiftLockRecord(hum, hrp)
+
+    if not hum or not hrp then
+        return false
+    end
+
+    local UIS = game:GetService("UserInputService")
+    local Players = game:GetService("Players")
+    local lp = Players.LocalPlayer
+
+    local isMobile = UIS.TouchEnabled and not UIS.MouseEnabled and not UIS.KeyboardEnabled
+
+    if isMobile then
+
+        local mapLocks = false
+        pcall(function()
+            if lp and lp.DevEnableMouseLock then mapLocks = true end
+            if hum.CameraOffset and hum.CameraOffset.Magnitude > 0.5 then mapLocks = true end
+        end)
+
+        return not mapLocks
+    end
+
+    local moveDir = hum.MoveDirection
+    if moveDir.Magnitude < 0.05 then
+        return false
+    end
+
+    local look = hrp.CFrame.LookVector
+    local flatLook = Vector3.new(look.X, 0, look.Z)
+    local flatMove = Vector3.new(moveDir.X, 0, moveDir.Z)
+
+    if flatLook.Magnitude < 0.05 or flatMove.Magnitude < 0.05 then
+        return false
+    end
+
+    local dot = flatLook.Unit:Dot(flatMove.Unit)
+    return dot > 0.72
+end
+
+function isNoShiftLockFrame(fr)
+    if type(fr) ~= "table" then
+        return false
+    end
+
+    return fr.sxzf == true
+        or fr.ybk == "AutoRotate"
+end
+
+function safeFunc(fn)
+    return type(fn) == "function"
+end
+
+function ensureFolder()
+    if safeFunc(isfolder) and safeFunc(makefolder) then
+        local ok, exists = pcall(function()
+            return isfolder(m_)
+        end)
+
+        if ok and not exists then
+            pcall(function()
+                makefolder(m_)
+            end)
+        elseif not ok then
+            pcall(function()
+                makefolder(m_)
+            end)
+        end
+    elseif safeFunc(makefolder) then
+        pcall(function()
+            makefolder(m_)
+        end)
+    end
+end
+
+function decodeJSON(str)
+    local ok, result = pcall(function()
+        return HttpService:JSONDecode(str)
+    end)
+
+    if ok then
+        return result
+    end
+
+    return nil
+end
+
+function filePathForName(name)
+    return m_ .. "/" .. cleanFileName(name) .. ".json"
+end
+
+function retimeFramesForExport(frames)
+
+    local source = basicNormalizeFrames(frames) or frames or {}
+    local result = {}
+    local wywl = nil
+    local lastTime = nil
+    local minDt = tonumber(ex) or 0.001
+
+    for _, fr in ipairs(source) do
+        if type(fr) == "table" then
+            local copy = deepCopy(fr)
+            local rawTime = tonumber(copy.times) or tonumber(copy.t) or 0
+
+            if wywl == nil then
+                wywl = rawTime
+            end
+
+            local t = rawTime - wywl
+
+            if lastTime ~= nil and t <= lastTime then
+                t = lastTime + minDt
+            end
+
+            copy.times = roundNumber(t, 9)
+            copy.t = copy.times
+
+            if copy.jqa == nil and copy.ws ~= nil then
+                copy.jqa = copy.ws
+            end
+            if copy.ws == nil and copy.jqa ~= nil then
+                copy.ws = copy.jqa
+            end
+            if type(copy.city) ~= "table" then
+                copy.city = { x = 0, y = 0, z = 0 }
+            end
+            if type(copy.moveDirection) ~= "table" then
+                copy.moveDirection = { x = 0, y = 0, z = 0 }
+            end
+
+            table.insert(result, copy)
+            lastTime = copy.times
+        end
+    end
+
+    return result
+end
+
+function prepareRawExactFramesForSave(frames)
+
+    return retimeFramesForExport(frames), 0
+end
+
+function getFrameHorizontalCitySpeedForBitwise(fr)
+    local city = tableToVec(fr and fr.city)
+    return Vector3.new(city.X, 0, city.Z).Magnitude
+end
+
+function detectBitwiseBaseSpeed(frames)
+    local wyf = {}
+    local ll_ = {}
+
+    for _, fr in ipairs(frames or {}) do
+        if type(fr) == "table" then
+            local ba = tostring(fr.states or fr.state or "Running")
+            local hSpeed = getFrameHorizontalCitySpeedForBitwise(fr)
+            local ws = tonumber(fr.jqa) or tonumber(fr.ws) or 0
+            local nw = math.max(hSpeed, ws)
+
+            if nw >= mpm then
+                table.insert(ll_, nw)
+
+                if ba == "Running" or ba == "Landed" then
+                    table.insert(wyf, nw)
+                end
+            end
+        end
+    end
+
+    local values = (#wyf >= 3) and wyf or ll_
+
+    if #values <= 0 then
+        return parseSpeedValue(hjo or jckq or zudm, zudm)
+    end
+
+    table.sort(values)
+
+    local xlnp = math.max(1, math.floor(#values * 0.35))
+    local endIndex = math.max(xlnp, math.ceil(#values * 0.75))
+    local sum = 0
+    local count = 0
+
+    for i = xlnp, endIndex do
+        sum = sum + (tonumber(values[i]) or 0)
+        count = count + 1
+    end
+
+    local base = sum / math.max(count, 1)
+    return math.clamp(roundNumber(base, 1), mpm, slw)
+end
+
+function autoMapIsGroundRunFrame(fr)
+    if type(fr) ~= "table" then
+        return false
+    end
+
+    local st = tostring(fr.states or fr.state or "Running")
+
+    if st == "Jumping" or st == "Freefall" or st == "FallingDown" or st == "Climbing" or st == "Swimming" then
+        return false
+    end
+
+    return st == "Running" or st == "Landed" or st == "RunningNoPhysics" or st == "Walking" or st == "None" or st == "Unknown" or st == ""
+end
+
+function autoMapFlatVecFromTable(t)
+    local v = tableToVec(t)
+    return Vector3.new(v.X, 0, v.Z)
+end
+
+function autoMapHorizontalCitySpeed(fr)
+    return autoMapFlatVecFromTable(fr and fr.city).Magnitude
+end
+
+function autoMapMoveMagnitude(fr)
+    return autoMapFlatVecFromTable(fr and fr.moveDirection).Magnitude
+end
+
+function autoMapFramePos(fr)
+    return tableToVec(fr and fr.position)
+end
+
+function autoMapPercentile(values, q)
+    if type(values) ~= "table" or #values <= 0 then
+        return nil
+    end
+
+    table.sort(values)
+    q = math.clamp(tonumber(q) or 0.5, 0, 1)
+    local idx = math.floor(1 + (#values - 1) * q + 0.5)
+    idx = math.clamp(idx, 1, #values)
+    return tonumber(values[idx])
+end
+
+function autoMapAverageMiddle(values, q1, q2)
+    if type(values) ~= "table" or #values <= 0 then
+        return nil
+    end
+
+    table.sort(values)
+    local s = math.clamp(math.floor(1 + (#values - 1) * (q1 or 0.55)), 1, #values)
+    local e = math.clamp(math.ceil(1 + (#values - 1) * (q2 or 0.88)), s, #values)
+    local sum = 0
+    local count = 0
+
+    for i = s, e do
+        sum = sum + (tonumber(values[i]) or 0)
+        count = count + 1
+    end
+
+    if count <= 0 then
+        return nil
+    end
+
+    return sum / count
+end
+
+function autoMapDetectNormalRunSpeed(frames)
+    local wsValues = {}
+    local hValues = {}
+    local fgcg = {}
+
+    for _, fr in ipairs(frames or {}) do
+        if autoMapIsGroundRunFrame(fr) then
+            local ws = tonumber(fr.jqa) or tonumber(fr.ws) or 0
+            local hs = autoMapHorizontalCitySpeed(fr)
+            local md = autoMapMoveMagnitude(fr)
+
+            if md >= (sygc or 0.045) or hs >= mpm then
+                if ws >= mpm then
+                    table.insert(wsValues, ws)
+                    table.insert(fgcg, ws)
+                end
+
+                if hs >= mpm then
+                    table.insert(hValues, hs)
+                    table.insert(fgcg, hs)
+                end
+            end
+        end
+    end
+
+    local _by = tonumber(dxps) or 6
+    local wsBase = nil
+    local hBase = nil
+
+    if #wsValues >= _by then
+
+        local wsMedian = autoMapPercentile(wsValues, 0.50)
+        local wsHigh = autoMapPercentile(wsValues, 0.75)
+        if wsMedian and wsHigh then
+            wsBase = math.max(wsMedian, wsHigh)
+        end
+    end
+
+    if #hValues >= _by then
+
+        local q50 = autoMapPercentile(hValues, 0.50) or 0
+        local q90 = autoMapPercentile(hValues, 0.90) or q50
+
+        local filtered = {}
+        local cap = math.max(mpm, q90 * 1.08)
+        for _, v in ipairs(hValues) do
+            v = tonumber(v) or 0
+            if v >= mpm and v <= cap then
+                table.insert(filtered, v)
+            end
+        end
+
+        if #filtered >= math.max(3, math.floor(_by * 0.5)) then
+            hBase = autoMapAverageMiddle(filtered, 0.58, 0.88) or autoMapPercentile(filtered, 0.75)
+        else
+            hBase = autoMapPercentile(hValues, 0.70)
+        end
+    end
+
+    local base = nil
+    if wsBase and hBase then
+
+        base = math.max(wsBase, hBase)
+    else
+        base = wsBase or hBase
+    end
+
+    if not base and #fgcg > 0 then
+        base = autoMapPercentile(fgcg, 0.75)
+    end
+
+    if not base or base < mpm then
+        base = parseSpeedValue(hjo or jckq or zudm, zudm)
+    end
+
+    return math.clamp(roundNumber(base, 2), mpm, slw)
+end
+
+function autoMapDirectionFromAround(frames, index)
+    local fr = frames and frames[index]
+    if type(fr) ~= "table" then
+        return Vector3.new(0, 0, 0)
+    end
+
+    local city = autoMapFlatVecFromTable(fr.city)
+    if city.Magnitude > 0.05 then
+        return city.Unit
+    end
+
+    local move = autoMapFlatVecFromTable(fr.moveDirection)
+    if move.Magnitude > 0.05 then
+        return move.Unit
+    end
+
+    local pos = autoMapFramePos(fr)
+    local nextF = frames[index + 1]
+    local prev = frames[index - 1]
+
+    if nextF then
+        local d = autoMapFramePos(nextF) - pos
+        local flat = Vector3.new(d.X, 0, d.Z)
+        if flat.Magnitude > 0.01 then
+            return flat.Unit
+        end
+    end
+
+    if prev then
+        local d = pos - autoMapFramePos(prev)
+        local flat = Vector3.new(d.X, 0, d.Z)
+        if flat.Magnitude > 0.01 then
+            return flat.Unit
+        end
+    end
+
+    return Vector3.new(0, 0, 0)
+end
+
+function autoMapApplyNormalRunSpeed(frames, normalSpeed)
+    if not rk or not sli then
+        return frames, 0, normalSpeed
+    end
+
+    frames = basicNormalizeFrames(frames) or frames or {}
+    if type(frames) ~= "table" or #frames <= 0 then
+        return frames, 0, normalSpeed
+    end
+
+    normalSpeed = tonumber(normalSpeed) or autoMapDetectNormalRunSpeed(frames)
+    normalSpeed = math.clamp(tonumber(normalSpeed) or zudm, mpm, slw)
+
+    local changed = 0
+    local gnp = normalSpeed * (tonumber(jpm) or 0.94)
+    local bb = normalSpeed * (tonumber(qeuz) or 1.10)
+
+    for i, fr in ipairs(frames) do
+        if autoMapIsGroundRunFrame(fr) then
+            local md = autoMapMoveMagnitude(fr)
+            local hs = autoMapHorizontalCitySpeed(fr)
+            local isMoving = md >= (sygc or 0.045) or hs >= (mpm * 0.45)
+
+            if isMoving then
+                local needFix = false
+
+                if hs <= 0.05 or hs < gnp then
+                    needFix = true
+                end
+
+                if hs > bb then
+                    needFix = true
+                end
+
+                if needFix then
+                    local dir = autoMapDirectionFromAround(frames, i)
+                    if dir.Magnitude > 0.05 then
+                        local oldCity = tableToVec(fr.city)
+                        local newFlat = dir.Unit * normalSpeed
+                        fr.city = {
+                            x = roundNumber(newFlat.X, 9),
+                            y = roundNumber(oldCity.Y, 9),
+                            z = roundNumber(newFlat.Z, 9)
+                        }
+                        changed = changed + 1
+                    end
+                end
+
+                local ws = tonumber(fr.jqa) or tonumber(fr.ws) or 0
+                if ws < gnp or ws > bb then
+                    fr.jqa = roundNumber(normalSpeed, 9)
+                    fr.ws = fr.jqa
+                else
+                    fr.jqa = roundNumber(math.max(ws, normalSpeed), 9)
+                    fr.ws = fr.jqa
+                end
+            end
+        end
+    end
+
+    return frames, changed, normalSpeed
+end
+
+function autoMapRetuneRunTimes(frames, normalSpeed)
+    if not eu then
+        return frames
+    end
+
+    frames = frames or {}
+    if #frames <= 1 then
+        return frames
+    end
+
+    normalSpeed = tonumber(normalSpeed) or autoMapDetectNormalRunSpeed(frames)
+    normalSpeed = math.max(tonumber(normalSpeed) or zudm, mpm)
+
+    local out = {}
+    local pdq = 0
+
+    for i, fr in ipairs(frames) do
+        local copy = deepCopy(fr)
+
+        if i == 1 then
+            pdq = 0
+        else
+            local prev = out[#out]
+            local rawDt = (tonumber(fr.times) or tonumber(fr.t) or 0) - (tonumber(frames[i - 1].times) or tonumber(frames[i - 1].t) or 0)
+            local dt = rawDt
+
+            if autoMapIsGroundRunFrame(prev) and autoMapIsGroundRunFrame(fr) then
+                local a = autoMapFramePos(prev)
+                local b = autoMapFramePos(fr)
+                local delta = b - a
+                local hd = Vector3.new(delta.X, 0, delta.Z).Magnitude
+                local md = math.max(autoMapMoveMagnitude(prev), autoMapMoveMagnitude(fr))
+
+                if hd > 0.01 and md >= (sygc or 0.045) then
+                    local bySpeed = hd / normalSpeed
+                    local speedCap = normalSpeed * (tonumber(qeuz) or 1.10)
+                    local ako = hd / math.max(speedCap, 1)
+
+                    if dt <= 0 then
+                        dt = bySpeed
+                    elseif dt < ako then
+                        dt = ako
+                    elseif dt > (bySpeed * 1.18) then
+                        dt = bySpeed
+                    end
+                end
+            end
+
+            if dt <= 0 then
+                dt = tonumber(ex) or 0.001
+            end
+
+            local minDt = tonumber(uek_) or 0.0065
+            local maxDt = tonumber(mjr) or 0.140
+            dt = math.max(dt, minDt)
+            dt = math.min(dt, maxDt)
+            pdq = pdq + dt
+        end
+
+        copy.times = roundNumber(pdq, 9)
+        copy.t = copy.times
+        table.insert(out, copy)
+    end
+
+    return out
+end
+
+function autoMapCleanSpeedForSave(frames)
+    if not rk then
+        return frames, 0, nil
+    end
+
+    local normal = autoMapDetectNormalRunSpeed(frames)
+    local changed = 0
+    frames, changed, normal = autoMapApplyNormalRunSpeed(frames, normal)
+    frames = autoMapRetuneRunTimes(frames, normal)
+    frames, changed = autoMapApplyNormalRunSpeed(frames, normal)
+    return frames, changed or 0, normal
+end
+
+function exportFrameForOniumRace(fr)
+    fr = fr or {}
+
+    local pos = tableToVec(fr.position)
+    local yaw = tonumber(fr.rotation) or 0
+    local moveDir = tableToVec(fr.moveDirection)
+    local cityVec = tableToVec(fr.city)
+    local ba = tostring(fr.states or fr.state or "Running")
+    local ws
+    if rmh and ejd then
+
+        ws = tonumber(fr.jqa)
+            or tonumber(fr.ws)
+            or zudm
+    else
+        ws = tonumber(fr.__bitwiseBaseSpeed)
+            or tonumber(fr.jqa)
+            or tonumber(fr.ws)
+            or zudm
+    end
+    local hip = tonumber(fr.hipHeight) or wz
+
+    local naf = mobileDeltaFrameHasGroundContact(fr)
+    local jumpFlag = (not naf) and (fr.jump == true or ba == "Jumping")
+
+    if naf and (ba == "Jumping" or ba == "Freefall" or ba == "FallingDown") then
+        ba = "Running"
+    elseif ba == "FallingDown" then
+        ba = "Freefall"
+    end
+
+    return {
+        jump = jumpFlag == true,
+
+        hipHeight = roundNumber(hip, 9),
+
+        rotation = roundNumber(yaw, 9),
+
+        moveDirection = {
+            y = roundNumber(moveDir.Y, 9),
+            x = roundNumber(moveDir.X, 9),
+            z = roundNumber(moveDir.Z, 9)
+        },
+
+        city = {
+            y = roundNumber(cityVec.Y, 9),
+            x = roundNumber(cityVec.X, 9),
+            z = roundNumber(cityVec.Z, 9)
+        },
+
+        position = {
+            y = roundNumber(pos.Y, 9),
+            x = roundNumber(pos.X, 9),
+            z = roundNumber(pos.Z, 9)
+        },
+
+        times = roundNumber(fr.times or fr.t or 0, 9),
+
+        jqa = roundNumber(ws, 9),
+
+        tool = tostring(fr.tool or ""),
+
+        states = ba
+    }
+end
+
+function buildOniumRacePayload(name, frames)
+    local p_ = {}
+    local xxhu = retimeFramesForExport(frames or {})
+
+    local bimc = nil
+    if not rmh then
+        bimc = detectBitwiseBaseSpeed(xxhu)
+    end
+
+    for i, fr in ipairs(xxhu) do
+        local copy = deepCopy(fr)
+
+        if not rmh then
+            copy.__bitwiseBaseSpeed = bimc
+        else
+            copy.__bitwiseBaseSpeed = nil
+        end
+
+        p_[i] = exportFrameForOniumRace(copy)
+
+        if i % 5000 == 0 then
+            task.wait()
+        end
+    end
+
+    return p_
+end
+
+function oniumJsonStringFast(v)
+    local ok, encoded = pcall(function()
+        return HttpService:JSONEncode(tostring(v or ""))
+    end)
+    if ok and encoded then
+        return encoded
+    end
+    return '""'
+end
+
+function oniumJsonNumberFast(v)
+    return tostring(tonumber(v) or 0)
+end
+
+function oniumPayloadFrameToJson(fr)
+    fr = fr or {}
+
+    local md = fr.moveDirection or {}
+    local cv = fr.city or {}
+    local ps = fr.position or {}
+
+    return "{"
+        .. '"jump":' .. ((fr.jump == true) and "true" or "false")
+        .. ',"hipHeight":' .. oniumJsonNumberFast(fr.hipHeight)
+        .. ',"rotation":' .. oniumJsonNumberFast(fr.rotation)
+        .. ',"moveDirection":{'
+            .. '"y":' .. oniumJsonNumberFast(md.y)
+            .. ',"x":' .. oniumJsonNumberFast(md.x)
+            .. ',"z":' .. oniumJsonNumberFast(md.z)
+        .. '}'
+        .. ',"city":{'
+            .. '"y":' .. oniumJsonNumberFast(cv.y)
+            .. ',"x":' .. oniumJsonNumberFast(cv.x)
+            .. ',"z":' .. oniumJsonNumberFast(cv.z)
+        .. '}'
+        .. ',"position":{'
+            .. '"y":' .. oniumJsonNumberFast(ps.y)
+            .. ',"x":' .. oniumJsonNumberFast(ps.x)
+            .. ',"z":' .. oniumJsonNumberFast(ps.z)
+        .. '}'
+        .. ',"times":' .. oniumJsonNumberFast(fr.times)
+        .. ',"jqa":' .. oniumJsonNumberFast(fr.jqa)
+        .. ',"tool":' .. oniumJsonStringFast(fr.tool)
+        .. ',"states":' .. oniumJsonStringFast(fr.states)
+        .. "}"
+end
+function encodeOniumPayloadFast(payload)
+    local chunks = {"["}
+    for i, fr in ipairs(payload or {}) do
+        if i > 1 then
+            chunks[#chunks + 1] = ","
+        end
+        chunks[#chunks + 1] = oniumPayloadFrameToJson(fr)
+        if i % 1800 == 0 then
+            task.wait()
+        end
+    end
+    chunks[#chunks + 1] = "]"
+    return table.concat(chunks)
+end
+
+function saveFramesToFile(name, frames)
+    ensureFolder()
+
+    local path = filePathForName(name)
+    local payload = buildOniumRacePayload(name, frames)
+    local json = encodeOniumPayloadFast(payload)
+
+    if not json then
+        return false, "JSON encode cepat gagal", path
+    end
+
+    if not safeFunc(writefile) then
+        return false, "writefile tidak tersedia, data disimpan memory saja", path
+    end
+
+    local ok, err = pcall(function()
+        writefile(path, json)
+    end)
+
+    if ok then
+        return true, "tersimpan", path
+    end
+
+    return false, tostring(err or "writefile error"), path
+end
+
+function readTextFile(path)
+    if not safeFunc(readfile) then
+        return nil
+    end
+
+    local ok, content = pcall(function()
+        return readfile(path)
+    end)
+
+    if ok then
+        return content
+    end
+
+    return nil
+end
+
+function deleteFile(path)
+    if not safeFunc(delfile) then
+        return false
+    end
+
+    local ok = pcall(function()
+        delfile(path)
+    end)
+
+    return ok
+end
+
+function listSavedFiles()
+    if not safeFunc(listfiles) then
+        return nil
+    end
+
+    ensureFolder()
+
+    local ok, files = pcall(function()
+        return listfiles(m_)
+    end)
+
+    if ok and type(files) == "table" then
+        return files
+    end
+
+    return nil
+end
+
+function basicNormalizeFrames(decoded)
+    if type(decoded) ~= "table" then
+        return nil
+    end
+
+    if type(decoded.frames) == "table" then
+        decoded = decoded.frames
+    elseif type(decoded.data) == "table" then
+        if type(decoded.data.frames) == "table" then
+            decoded = decoded.data.frames
+        else
+            decoded = decoded.data
+        end
+    end
+
+    local frames = {}
+
+    local function readPos(fr)
+        if type(fr.position) == "table" then
+            return {
+                x = tonumber(fr.position.x or fr.position[1]) or 0,
+                y = tonumber(fr.position.y or fr.position[2]) or 0,
+                z = tonumber(fr.position.z or fr.position[3]) or 0
+            }
+        end
+
+        if type(fr.pos) == "table" then
+            return {
+                x = tonumber(fr.pos.x or fr.pos[1]) or 0,
+                y = tonumber(fr.pos.y or fr.pos[2]) or 0,
+                z = tonumber(fr.pos.z or fr.pos[3]) or 0
+            }
+        end
+
+        if fr.x ~= nil or fr.y ~= nil or fr.z ~= nil then
+            return {
+                x = tonumber(fr.x) or 0,
+                y = tonumber(fr.y) or 0,
+                z = tonumber(fr.z) or 0
+            }
+        end
+
+        return nil
+    end
+
+    local function readYaw(fr)
+        if fr.rotation ~= nil then
+            return tonumber(fr.rotation) or 0
+        end
+
+        if fr.rot ~= nil then
+            return tonumber(fr.rot) or 0
+        end
+
+        if fr.r00 ~= nil and fr.r20 ~= nil then
+            local r00 = tonumber(fr.r00) or 1
+            local r20 = tonumber(fr.r20) or 0
+            return math.atan(-r20, r00)
+        end
+
+        return 0
+    end
+
+    local function readMoveDir(fr)
+        if type(fr.moveDirection) == "table" then
+            return {
+                x = tonumber(fr.moveDirection.x or fr.moveDirection[1]) or 0,
+                y = tonumber(fr.moveDirection.y or fr.moveDirection[2]) or 0,
+                z = tonumber(fr.moveDirection.z or fr.moveDirection[3]) or 0
+            }
+        end
+
+        return { x = 0, y = 0, z = 0 }
+    end
+
+    local function readCity(fr)
+        if type(fr.city) == "table" then
+            return {
+                x = tonumber(fr.city.x or fr.city[1]) or 0,
+                y = tonumber(fr.city.y or fr.city[2]) or 0,
+                z = tonumber(fr.city.z or fr.city[3]) or 0
+            }
+        end
+
+        if type(fr.velocity) == "table" then
+            return {
+                x = tonumber(fr.velocity.x or fr.velocity[1]) or 0,
+                y = tonumber(fr.velocity.y or fr.velocity[2]) or 0,
+                z = tonumber(fr.velocity.z or fr.velocity[3]) or 0
+            }
+        end
+
+        return { x = 0, y = 0, z = 0 }
+    end
+
+    for _, fr in ipairs(decoded) do
+        if type(fr) == "table" then
+            local pos = readPos(fr)
+
+            if pos then
+                local ubo = tonumber(fr.times) or tonumber(fr.t) or tonumber(fr.time) or tonumber(fr.timestamp) or 0
+                local rukf = tonumber(fr.ws) or tonumber(fr.jqa) or zudm
+                local ba = tostring(fr.states or fr.state or "Running")
+
+                local newFrame = {
+                    jump = fr.jump == true or fr.jumping == true,
+                    sxzf = fr.sxzf == true or fr.ybk == "AutoRotate",
+                    ybk = tostring(fr.ybk or ((fr.sxzf == true) and "AutoRotate" or "ShiftLock")),
+                    mvi = fr.mvi == true or fr.isMobileRecord == true or tostring(fr.inputDevice or "") == "MobileDelta",
+                    inputDevice = tostring(fr.inputDevice or (fr.mvi == true and "MobileDelta" or "")),
+                    executorDevice = tostring(fr.executorDevice or ""),
+                    grounded = fr.grounded == true or fr.isGrounded == true,
+                    floorMaterial = tostring(fr.floorMaterial or fr.floor or fr.floorMat or ""),
+                    rawState = tostring(fr.rawState or fr.rawHumanoidState or ""),
+                    hipHeight = tonumber(fr.hipHeight) or 2,
+                    rotation = readYaw(fr),
+                    ground = normalizeGroundInfo(fr.ground),
+                    moveDirection = readMoveDir(fr),
+                    city = readCity(fr),
+                    position = pos,
+                    times = ubo,
+                    t = ubo,
+                    jqa = rukf,
+                    ws = rukf,
+                    v = tonumber(fr.v) or nil,
+                    tool = tostring(fr.tool or ""),
+                    states = ba,
+                    r00 = tonumber(fr.r00),
+                    r01 = tonumber(fr.r01),
+                    r02 = tonumber(fr.r02),
+                    r10 = tonumber(fr.r10),
+                    r11 = tonumber(fr.r11),
+                    r12 = tonumber(fr.r12),
+                    r20 = tonumber(fr.r20),
+                    r21 = tonumber(fr.r21),
+                    r22 = tonumber(fr.r22),
+                    seam = fr.seam == true or fr._seam == true,
+                    cutNext = fr.cutNext == true or fr._cutNext == true
+                }
+
+                table.insert(frames, newFrame)
+            end
+        end
+    end
+
+    if #frames <= 0 then
+        return nil
+    end
+
+    table.sort(frames, function(a, b)
+        return (tonumber(a.times) or 0) < (tonumber(b.times) or 0)
+    end)
+
+    return frames
+end
+
+function framePos(fr)
+    return tableToVec(fr.position)
+end
+
+function frameMovedEnough(a, b)
+    if not a or not b then
+        return false
+    end
+
+    local pa = framePos(a)
+    local pb = framePos(b)
+
+    local hd = horizontalDistance(pa, pb)
+    local vd = math.abs(pa.Y - pb.Y)
+
+    return hd >= ax or vd >= urke
+end
+
+function hasRotationChange(a, b)
+    if not a or not b then
+        return false
+    end
+
+    local rotA = tonumber(a.rotation) or 0
+    local rotB = tonumber(b.rotation) or 0
+    local diff = math.abs(rotA - rotB)
+
+    diff = math.min(diff, 2 * math.pi - diff)
+
+    return diff > 0.12
+end
+
+function shouldKeepFrame(frames, i)
+    local fr = frames[i]
+    if not fr then
+        return false
+    end
+
+    if fr.seam == true or fr.cutNext == true then
+        return true
+    end
+
+    if fr.jump == true then
+        return true
+    end
+
+    local prev = frames[i - 1]
+    local nextF = frames[i + 1]
+
+    if hasRotationChange(prev, fr) or hasRotationChange(fr, nextF) then
+        return true
+    end
+
+    if xswd(fr.states) then
+        local lpi = tostring(fr.states)
+
+        if lpi == "Jumping" or lpi == "Freefall" or lpi == "FallingDown" then
+            return true
+        end
+
+        if lpi == "Climbing" or lpi == "Swimming" then
+            return true
+        end
+
+        if frameMovedEnough(prev, fr) or frameMovedEnough(fr, nextF) then
+            return true
+        end
+    end
+
+    if frameMovedEnough(prev, fr) then
+        return true
+    end
+
+    if frameMovedEnough(fr, nextF) then
+        return true
+    end
+
+    return false
+end
+
+function sanitizeFrames(decoded, retime)
+    local frames = basicNormalizeFrames(decoded)
+    if not frames then
+        return nil
+    end
+
+    local cleaned = {}
+
+    for i = 1, #frames do
+        if shouldKeepFrame(frames, i) then
+            local fr = deepCopy(frames[i])
+            table.insert(cleaned, fr)
+        end
+    end
+
+    local final = {}
+    local lastKept = nil
+
+    for _, fr in ipairs(cleaned) do
+        if not lastKept then
+            table.insert(final, fr)
+            lastKept = fr
+        else
+            local keep = fr.seam == true or fr.cutNext == true or frameMovedEnough(lastKept, fr) or fr.jump == true or xswd(fr.states)
+
+            if keep then
+                table.insert(final, fr)
+                lastKept = fr
+            end
+        end
+    end
+
+    if #final <= 0 then
+        return nil
+    end
+
+    if retime then
+        for i, fr in ipairs(final) do
+            fr.times = roundNumber((i - 1) * iy, 4)
+            fr.t = fr.times
+        end
+    end
+
+    return final
+end
+
+function findCheckpointByName(name)
+    name = tostring(name or "")
+
+    for _, cp in ipairs(bu) do
+        if cp.name == name then
+            return cp
+        end
+    end
+
+    return nil
+end
+
+function parseCheckpointNumber(name)
+    local n = tostring(name or ""):match("^checkpoint_(%d+)$")
+    if n then
+        return tonumber(n)
+    end
+    return nil
+end
+
+function getNextDefaultName()
+    local i = 1
+
+    while findCheckpointByName("checkpoint_" .. tostring(i)) do
+        i = i + 1
+    end
+
+    return "checkpoint_" .. tostring(i)
+end
+
+function upsertCheckpoint(name, frames, isMerged, path)
+    name = cleanFileName(name)
+
+    frames = basicNormalizeFrames(frames) or frames
+
+    if type(frames) ~= "table" or #frames <= 0 then
+        return false
+    end
+
+    local existing = findCheckpointByName(name)
+
+    if existing then
+        existing.frames = deepCopy(frames)
+        existing.isMerged = isMerged == true
+        existing.path = path or existing.path
+    else
+        local _osw = parseCheckpointNumber(name)
+        local nk = _osw or obr
+
+        table.insert(bu, {
+            name = name,
+            frames = deepCopy(frames),
+            isMerged = isMerged == true,
+            path = path or filePathForName(name),
+            order = nk
+        })
+
+        if nk >= obr then
+            obr = nk + 1
+        else
+            obr = obr + 1
+        end
+    end
+
+    if yc then
+        yc()
+    end
+
+    return true
+end
+
+function addCorner(obj, radius)
+    local corner = Instance.new("UICorner")
+    corner.CornerRadius = UDim.new(0, radius or 8)
+    corner.Parent = obj
+    return corner
+end
+
+function addStroke(obj, color, transparency)
+    local stroke = Instance.new("UIStroke")
+    stroke.Color = color or Color3.fromRGB(80, 80, 95)
+    stroke.Transparency = transparency or 0.25
+    stroke.Thickness = 1
+    stroke.Parent = obj
+    return stroke
+end
+
+function makeLabel(parent, text, size, bold)
+    local label = Instance.new("TextLabel")
+    label.BackgroundTransparency = 1
+    label.Text = text or ""
+    label.TextColor3 = Color3.fromRGB(235, 235, 245)
+    label.TextSize = size or 13
+    label.Font = bold and Enum.Font.GothamBold or Enum.Font.Gotham
+    label.TextXAlignment = Enum.TextXAlignment.Left
+    label.TextYAlignment = Enum.TextYAlignment.Center
+    label.Parent = parent
+    return label
+end
+
+function makeButton(parent, text, color)
+    local btn = Instance.new("TextButton")
+    btn.AutoButtonColor = true
+    btn.BackgroundColor3 = color or Color3.fromRGB(45, 45, 58)
+    btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    btn.Text = text or "Button"
+    btn.TextSize = 9
+    btn.Font = Enum.Font.GothamBold
+    btn.Size = UDim2.new(1, 0, 0, 20)
+    btn.Parent = parent
+    addCorner(btn, 6)
+    addStroke(btn, Color3.fromRGB(90, 90, 115), 0.45)
+    return btn
+end
+
+function makeTextBox(parent, placeholder, defaultText)
+    local box = Instance.new("TextBox")
+    box.BackgroundColor3 = Color3.fromRGB(24, 24, 32)
+    box.TextColor3 = Color3.fromRGB(255, 255, 255)
+    box.PlaceholderColor3 = Color3.fromRGB(140, 140, 150)
+    box.PlaceholderText = placeholder or ""
+    box.Text = defaultText or ""
+    box.ClearTextOnFocus = false
+    box.TextSize = 9
+    box.Font = Enum.Font.Gotham
+    box.Size = UDim2.new(1, 0, 0, 20)
+    box.Parent = parent
+    addCorner(box, 6)
+    addStroke(box, Color3.fromRGB(75, 75, 95), 0.45)
+    return box
+end
+
+function addSection(parent, text)
+    local label = makeLabel(parent, text, 9, true)
+    label.TextColor3 = Color3.fromRGB(160, 170, 255)
+    label.Size = UDim2.new(1, 0, 0, 16)
+    return label
+end
+
+function makeDraggable(frame, handle)
+    local dragging = false
+    local ay_e
+    local startPos
+
+    handle = handle or frame
+
+    addConnection(handle.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            dragging = true
+            ay_e = input.Position
+            startPos = frame.Position
+
+            addConnection(input.Changed:Connect(function()
+                if input.UserInputState == Enum.UserInputState.End then
+                    dragging = false
+                end
+            end))
+        end
+    end))
+
+    addConnection(UserInputService.InputChanged:Connect(function(input)
+        if not dragging then
+            return
+        end
+
+        if input.UserInputType ~= Enum.UserInputType.MouseMovement and input.UserInputType ~= Enum.UserInputType.Touch then
+            return
+        end
+
+        local delta = input.Position - ay_e
+
+        frame.Position = UDim2.new(
+            startPos.X.Scale,
+            startPos.X.Offset + delta.X,
+            startPos.Y.Scale,
+            startPos.Y.Offset + delta.Y
+        )
+    end))
+end
+
+function bindButton(btn, callback)
+    local debounce = false
+
+    local function run()
+        if debounce then
+            return
+        end
+
+        debounce = true
+
+        task.delay(0.18, function()
+            debounce = false
+        end)
+
+        callback()
+    end
+
+    pcall(function()
+        addConnection(btn.Activated:Connect(run))
+    end)
+
+    pcall(function()
+        addConnection(btn.MouseButton1Click:Connect(run))
+    end)
+end
+
+iri = Instance.new("iri")
+iri.Name = "ONIUM Recorder"
+iri.ResetOnSpawn = false
+iri.IgnoreGuiInset = true
+iri.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+
+pcall(function()
+    if syn and syn.protect_gui then
+        syn.protect_gui(iri)
+    end
+end)
+
+local parentOk = pcall(function()
+    iri.Parent = CoreGui
+end)
+
+if not parentOk or not iri.Parent then
+    iri.Parent = PlayerGui
+end
+
+_px = Instance.new("Frame")
+_px.Name = "MainWindow"
+_px.Size = UDim2.fromOffset(410, 250)
+_px.Position = UDim2.new(0.5, -205, 0.5, -125)
+_px.BackgroundColor3 = Color3.fromRGB(18, 18, 25)
+_px.Parent = iri
+addCorner(_px, 14)
+addStroke(_px, Color3.fromRGB(105, 105, 150), 0.25)
+
+local Header = Instance.new("Frame")
+Header.Name = "Header"
+Header.Size = UDim2.new(1, 0, 0, 30)
+Header.BackgroundColor3 = Color3.fromRGB(28, 28, 40)
+Header.Parent = _px
+addCorner(Header, 14)
+
+local kdy = Instance.new("Frame")
+kdy.BackgroundColor3 = Color3.fromRGB(36, 36, 52)
+kdy.Size = UDim2.fromOffset(20, 20)
+kdy.Position = UDim2.fromOffset(6, 5)
+kdy.Parent = Header
+addCorner(kdy, 10)
+addStroke(kdy, Color3.fromRGB(110, 110, 160), 0.25)
+
+local Logo = Instance.new("ImageLabel")
+Logo.Name = "HeaderLogo"
+Logo.BackgroundTransparency = 1
+Logo.Image = ww
+Logo.ScaleType = Enum.ScaleType.Fit
+Logo.Size = UDim2.new(1, -4, 1, -4)
+Logo.Position = UDim2.fromOffset(2, 2)
+Logo.Parent = kdy
+
+local Title = Instance.new("TextLabel")
+Title.BackgroundTransparency = 1
+Title.Text = "ONIUM Recorder | BitWise Play"
+Title.Font = Enum.Font.GothamBold
+Title.TextSize = 11
+Title.TextColor3 = Color3.fromRGB(245, 245, 255)
+Title.TextXAlignment = Enum.TextXAlignment.Left
+Title.Size = UDim2.new(1, -112, 1, 0)
+Title.Position = UDim2.fromOffset(31, 0)
+Title.Parent = Header
+
+local MinBtn = Instance.new("TextButton")
+MinBtn.BackgroundColor3 = Color3.fromRGB(45, 45, 60)
+MinBtn.Text = "–"
+MinBtn.Font = Enum.Font.GothamBold
+MinBtn.TextSize = 15
+MinBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+MinBtn.Size = UDim2.fromOffset(24, 20)
+MinBtn.Position = UDim2.new(1, -54, 0, 5)
+MinBtn.Parent = Header
+addCorner(MinBtn, 8)
+
+local CloseBtn = Instance.new("TextButton")
+CloseBtn.BackgroundColor3 = Color3.fromRGB(180, 45, 65)
+CloseBtn.Text = "X"
+CloseBtn.Font = Enum.Font.GothamBold
+CloseBtn.TextSize = 10
+CloseBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+CloseBtn.Size = UDim2.fromOffset(24, 20)
+CloseBtn.Position = UDim2.new(1, -27, 0, 5)
+CloseBtn.Parent = Header
+addCorner(CloseBtn, 8)
+
+makeDraggable(_px, Header)
+
+local Body = Instance.new("Frame")
+Body.BackgroundTransparency = 1
+Body.Size = UDim2.new(1, -10, 1, -38)
+Body.Position = UDim2.fromOffset(5, 35)
+Body.Parent = _px
+
+local _w = Instance.new("Frame")
+_w.BackgroundColor3 = Color3.fromRGB(22, 22, 30)
+_w.Size = UDim2.new(0, 138, 1, 0)
+_w.Parent = Body
+addCorner(_w, 12)
+addStroke(_w, Color3.fromRGB(70, 70, 95), 0.45)
+
+local LeftPad = Instance.new("UIPadding")
+LeftPad.PaddingTop = UDim.new(0, 4)
+LeftPad.PaddingBottom = UDim.new(0, 4)
+LeftPad.PaddingLeft = UDim.new(0, 4)
+LeftPad.PaddingRight = UDim.new(0, 4)
+LeftPad.Parent = _w
+
+local LeftList = Instance.new("UIListLayout")
+LeftList.SortOrder = Enum.SortOrder.LayoutOrder
+LeftList.Padding = UDim.new(0, 3)
+LeftList.Parent = _w
+
+addSection(_w, "CONTROLS")
+local z_t = makeButton(_w, "● RECORD", Color3.fromRGB(180, 55, 70))
+local _dqf = makeButton(_w, "SET SPEED", Color3.fromRGB(60, 65, 95))
+
+addSection(_w, "PLAYBACK")
+speedBox = makeTextBox(_w, "AUTO / isi speed", "AUTO")
+local eggg = makeButton(_w, "STOP PLAY", Color3.fromRGB(155, 60, 65))
+
+addSection(_w, "SAVE")
+dxay = makeTextBox(_w, "name", "")
+local SaveBtn = makeButton(_w, "SAVE", Color3.fromRGB(55, 110, 75))
+
+local ke = Instance.new("Frame")
+ke.BackgroundColor3 = Color3.fromRGB(22, 22, 30)
+ke.Size = UDim2.new(1, -144, 1, 0)
+ke.Position = UDim2.fromOffset(144, 0)
+ke.Parent = Body
+addCorner(ke, 12)
+addStroke(ke, Color3.fromRGB(70, 70, 95), 0.45)
+
+local RightPad = Instance.new("UIPadding")
+RightPad.PaddingTop = UDim.new(0, 4)
+RightPad.PaddingBottom = UDim.new(0, 4)
+RightPad.PaddingLeft = UDim.new(0, 4)
+RightPad.PaddingRight = UDim.new(0, 4)
+RightPad.Parent = ke
+
+local rh = makeLabel(ke, "FOLDER", 12, true)
+rh.TextColor3 = Color3.fromRGB(160, 170, 255)
+rh.Size = UDim2.new(1, 0, 0, 14)
+rh.Position = UDim2.fromOffset(0, 0)
+
+local rt_ = Instance.new("Frame")
+rt_.BackgroundTransparency = 1
+rt_.Size = UDim2.new(1, 0, 0, 20)
+rt_.Position = UDim2.fromOffset(0, 16)
+rt_.Parent = ke
+
+local ydhx = Instance.new("UIListLayout")
+ydhx.FillDirection = Enum.FillDirection.Horizontal
+ydhx.SortOrder = Enum.SortOrder.LayoutOrder
+ydhx.Padding = UDim.new(0, 3)
+ydhx.Parent = rt_
+
+local utr = makeButton(rt_, "Del All", Color3.fromRGB(145, 55, 60))
+utr.Size = UDim2.new(0.2, -4, 1, 0)
+
+local ozd = makeButton(rt_, "Load", Color3.fromRGB(55, 80, 130))
+ozd.Size = UDim2.new(0.2, -4, 1, 0)
+
+local w_ct = makeButton(rt_, "Refresh", Color3.fromRGB(55, 95, 105))
+w_ct.Size = UDim2.new(0.2, -4, 1, 0)
+
+local MergeBtn = makeButton(rt_, "Merge", Color3.fromRGB(95, 70, 150))
+MergeBtn.Size = UDim2.new(0.2, -4, 1, 0)
+
+fqh = makeButton(rt_, "CP OFF", Color3.fromRGB(55, 55, 70))
+fqh.Size = UDim2.new(0.2, -4, 1, 0)
+updateCpMarkerToggleButton()
+
+chnu = makeTextBox(ke, "Search checkpoint...", "")
+chnu.Size = UDim2.new(1, 0, 0, 20)
+chnu.Position = UDim2.fromOffset(0, 40)
+
+iq = Instance.new("ScrollingFrame")
+iq.Name = "CheckpointList"
+iq.BackgroundColor3 = Color3.fromRGB(17, 17, 24)
+iq.Size = UDim2.new(1, 0, 1, -64)
+iq.Position = UDim2.fromOffset(0, 62)
+iq.ScrollBarThickness = 4
+iq.CanvasSize = UDim2.fromOffset(0, 0)
+iq.Parent = ke
+addCorner(iq, 10)
+addStroke(iq, Color3.fromRGB(65, 65, 90), 0.55)
+
+local ListPad = Instance.new("UIPadding")
+ListPad.PaddingTop = UDim.new(0, 4)
+ListPad.PaddingBottom = UDim.new(0, 4)
+ListPad.PaddingLeft = UDim.new(0, 4)
+ListPad.PaddingRight = UDim.new(0, 4)
+ListPad.Parent = iq
+
+fzr = Instance.new("UIListLayout")
+fzr.SortOrder = Enum.SortOrder.LayoutOrder
+fzr.Padding = UDim.new(0, 4)
+fzr.Parent = iq
+
+addConnection(fzr:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+    iq.CanvasSize = UDim2.fromOffset(0, fzr.AbsoluteContentSize.Y + 14)
+end))
+
+moq = Instance.new("TextLabel")
+moq.Visible = false
+moq.BackgroundColor3 = Color3.fromRGB(35, 35, 50)
+moq.TextColor3 = Color3.fromRGB(255, 255, 255)
+moq.Font = Enum.Font.GothamBold
+moq.TextSize = 9
+moq.Size = UDim2.new(1, -10, 0, 18)
+moq.Position = UDim2.new(0, 5, 1, -21)
+moq.Parent = _px
+addCorner(moq, 8)
+addStroke(moq, Color3.fromRGB(90, 90, 130), 0.35)
+
+MiniLogo = Instance.new("ImageButton")
+MiniLogo.Name = "MiniLogo"
+MiniLogo.Visible = false
+MiniLogo.BackgroundColor3 = Color3.fromRGB(26, 26, 38)
+MiniLogo.Image = ww
+MiniLogo.ScaleType = Enum.ScaleType.Fit
+MiniLogo.Size = UDim2.fromOffset(38, 38)
+MiniLogo.Position = UDim2.fromOffset(25, 170)
+MiniLogo.Parent = iri
+addCorner(MiniLogo, 19)
+addStroke(MiniLogo, Color3.fromRGB(135, 135, 190), 0.2)
+makeDraggable(MiniLogo, MiniLogo)
+
+sw = Instance.new("Frame")
+sw.Visible = false
+sw.BackgroundColor3 = Color3.fromRGB(20, 20, 28)
+sw.Size = UDim2.fromOffset(154, 50)
+sw.Position = UDim2.new(0.5, -77, 0.12, 0)
+sw.Parent = iri
+addCorner(sw, 8)
+addStroke(sw, Color3.fromRGB(200, 65, 80), 0.15)
+
+local meei = Instance.new("Frame")
+meei.BackgroundColor3 = Color3.fromRGB(130, 35, 50)
+meei.Size = UDim2.new(1, 0, 0, 16)
+meei.Parent = sw
+addCorner(meei, 8)
+makeDraggable(sw, meei)
+
+fft = Instance.new("TextLabel")
+fft.BackgroundTransparency = 1
+fft.Text = "● REC"
+fft.TextColor3 = Color3.fromRGB(255, 255, 255)
+fft.Font = Enum.Font.GothamBold
+fft.TextSize = 9
+fft.Size = UDim2.new(1, -12, 1, 0)
+fft.Position = UDim2.fromOffset(6, 0)
+fft.Parent = meei
+
+wm = makeLabel(sw, "Timer: 00:00.00", 13, true)
+wm.Size = UDim2.new(1, -20, 0, 0)
+wm.Position = UDim2.fromOffset(10, 30)
+wm.Visible = false
+
+w_uw = makeLabel(sw, "Frames: 0", 12, false)
+w_uw.Size = UDim2.new(1, -20, 0, 0)
+w_uw.Position = UDim2.fromOffset(10, 30)
+w_uw.Visible = false
+
+local bcjk = Instance.new("Frame")
+bcjk.BackgroundTransparency = 1
+bcjk.Size = UDim2.new(1, -10, 0, 22)
+bcjk.Position = UDim2.fromOffset(5, 23)
+bcjk.Parent = sw
+
+local qssy = Instance.new("UIListLayout")
+qssy.FillDirection = Enum.FillDirection.Horizontal
+qssy.Padding = UDim.new(0, 4)
+qssy.Parent = bcjk
+
+local StopBtn = makeButton(bcjk, "STOP", Color3.fromRGB(180, 55, 70))
+StopBtn.Size = UDim2.new(0.5, -2, 1, 0)
+
+local qpw = makeButton(bcjk, "ROLL", Color3.fromRGB(80, 95, 170))
+qpw.Size = UDim2.new(0.5, -2, 1, 0)
+
+local slv = -999
+local ul = 0
+local wsr = -999
+local mnxl = nil
+local pi = -999
+local m_m = ""
+
+function recordIsAirStateText(lpi)
+    lpi = tostring(lpi or "")
+    return lpi == "Jumping"
+        or lpi == "Freefall"
+        or lpi == "FallingDown"
+end
+
+function getRecordToolNameFast(char)
+    if not fdfs then
+        return getEquippedToolName(char)
+    end
+
+    local now = os.clock()
+    if now - pi >= _gmw then
+        m_m = getEquippedToolName(char)
+        pi = now
+    end
+
+    return m_m or ""
+end
+
+function getRecordGroundInfoFast(hrp, ubo, lpi)
+    if not fdfs then
+        return getGroundInfo(hrp)
+    end
+
+    local t = tonumber(ubo) or os.clock()
+    local st = tostring(lpi or "")
+    local air = recordIsAirStateText(st)
+
+    if (not air) and (not mnxl or (t - wsr) >= dw) then
+        mnxl = getGroundInfo(hrp)
+        wsr = t
+    end
+
+    if air then
+
+        if (t - wsr) <= 0.14 then
+            return mnxl
+        end
+        return nil
+    end
+
+    return mnxl
+end
+
+function getRecordDuration()
+    if #xbk <= 0 then
+        return 0
+    end
+
+    return tonumber(xbk[#xbk].times) or 0
+end
+
+function updateOverlay(p_u, force)
+    local now = os.clock()
+
+    if fdfs and zd and not force then
+        if now - ul < _sj then
+            return
+        end
+    end
+
+    ul = now
+
+    if wm then
+        wm.Text = "Timer: " .. formatTime(p_u or getRecordDuration())
+    end
+
+    if w_uw then
+        w_uw.Text = "Frames: " .. tostring(#xbk)
+    end
+end
+
+function makeFrame(ubo, hum, hrp)
+    local pos = hrp.Position
+    local vel = hrp.AssemblyLinearVelocity
+    local moveDir = hum.MoveDirection
+
+    local _, yaw, _ = hrp.CFrame:ToOrientation()
+    local lpi = getHumanoidStateName(hum)
+    local iqw = Vector3.new(vel.X, 0, vel.Z).Magnitude
+    local g_b = tonumber(hum.WalkSpeed) or zudm
+    local mvi = isMobileTouchDeviceSafe()
+
+    local sxzf = detectNoShiftLockRecord(hum, hrp)
+    local ybk = sxzf and "AutoRotate" or "ShiftLock"
+
+    local yo = lpi
+    local zqu = getHumanoidFloorMaterialNameSafe(hum)
+    local hx = isGroundFloorMaterialName(zqu)
+    local jumpFlag = false
+    local yVel = tonumber(vel.Y) or 0
+
+    if lpi == "Climbing" or lpi == "Swimming" then
+        jumpFlag = false
+    elseif hx then
+
+        if lpi == "Jumping" or lpi == "Freefall" or lpi == "FallingDown" then
+            lpi = "Running"
+        end
+        jumpFlag = false
+    elseif lpi == "Jumping" or lpi == "Freefall" or lpi == "FallingDown" then
+        if yVel > 4 then
+            lpi = "Jumping"
+            jumpFlag = true
+        else
+            lpi = "Freefall"
+            jumpFlag = false
+        end
+    elseif mvi and (not hx) and yVel >= (qfq or 7.5) then
+
+        lpi = "Jumping"
+        jumpFlag = true
+    elseif mvi and (not hx) and yVel <= (mak or -5.5) then
+        lpi = "Freefall"
+        jumpFlag = false
+    elseif lpi == "FallingDown" then
+        lpi = "Freefall"
+        jumpFlag = false
+    end
+
+    local x, y, z, r00, r01, r02, r10, r11, r12, r20, r21, r22 = hrp.CFrame:GetComponents()
+
+    return {
+        jump = jumpFlag == true,
+        sxzf = sxzf,
+        ybk = ybk,
+        mvi = mvi == true,
+        inputDevice = mvi and "MobileDelta" or "PC",
+        executorDevice = mvi and "DeltaAndroid" or "Desktop",
+        grounded = hx == true,
+        floorMaterial = zqu,
+        rawState = yo,
+        hipHeight = roundNumber(tonumber(hum.HipHeight) or wz, 9),
+        rotation = roundNumber(yaw, 9),
+        moveDirection = vecToTable(moveDir),
+        city = vecToTable(vel),
+        position = vecToTable(pos),
+        times = roundNumber(ubo, 9),
+        jqa = roundNumber(g_b, 9),
+        tool = getRecordToolNameFast(LocalPlayer.Character),
+        states = lpi,
+        ground = getRecordGroundInfoFast(hrp, ubo, lpi),
+        t = roundNumber(ubo, 9),
+        x = roundNumber(x, 9),
+        y = roundNumber(y, 9),
+        z = roundNumber(z, 9),
+        r00 = roundNumber(r00, 9),
+        r01 = roundNumber(r01, 9),
+        r02 = roundNumber(r02, 9),
+        r10 = roundNumber(r10, 9),
+        r11 = roundNumber(r11, 9),
+        r12 = roundNumber(r12, 9),
+        r20 = roundNumber(r20, 9),
+        r21 = roundNumber(r21, 9),
+        r22 = roundNumber(r22, 9),
+        v = roundNumber(iqw, 9),
+        ws = roundNumber(g_b, 9)
+    }
+end
+
+local xsi_ = 0.1
+local aqn = nil
+
+function isRealMovement(hum, hrp, lastSavedPos)
+    local pos = hrp.Position
+    local vel = hrp.AssemblyLinearVelocity
+    local moveDir = hum.MoveDirection
+    local lpi = getHumanoidStateName(hum)
+
+    local hd = horizontalDistance(pos, lastSavedPos)
+    local vd = math.abs(pos.Y - lastSavedPos.Y)
+    local hv = Vector3.new(vel.X, 0, vel.Z).Magnitude
+    local vv = math.abs(vel.Y)
+
+    local _, currentYaw, _ = hrp.CFrame:ToOrientation()
+    local fhn = false
+    if aqn then
+        local diff = math.abs(currentYaw - aqn)
+        diff = math.min(diff, 2 * math.pi - diff)
+        fhn = diff > xsi_
+    end
+    aqn = currentYaw
+
+    local ljn = hd >= akoq or vd >= 0.03
+    local walking = moveDir.Magnitude >= ymaz and ljn
+    local poo = hv >= ug_y and ljn
+
+    local qwi =
+        lpi == "Jumping"
+        or lpi == "Freefall"
+        or lpi == "FallingDown"
+        or lpi == "Climbing"
+        or lpi == "Swimming"
+
+    local xwh = qwi and (
+        ljn
+        or vv >= 0.15
+        or moveDir.Magnitude >= 0.01
+    )
+
+    return walking or poo or xwh or fhn
+end
+
+brd = function()
+    if zd then
+        notify("Record", "Recording sudah berjalan", 2)
+        return
+    end
+
+    local char, hum, hrp = getCharacter()
+    if not char or not hum or not hrp then
+        notify("Record", "Character belum siap / belum spawn", 3)
+        return
+    end
+
+    pcall(function()
+        hum.Jump = false
+        hum.PlatformStand = false
+        hum.AutoRotate = true
+        hum:ChangeState(Enum.HumanoidStateType.Running)
+    end)
+    pcall(function()
+        local v = hrp.AssemblyLinearVelocity
+        hrp.AssemblyLinearVelocity = Vector3.new(v.X, 0, v.Z)
+        hrp.AssemblyAngularVelocity = Vector3.new(0, 0, 0)
+    end)
+
+    avbq = tonumber(hum.WalkSpeed) or avbq
+    kkvu = avbq
+    pc = getEquippedToolName(char)
+
+    local wj = tonumber(hum.WalkSpeed) or zudm
+    jckq = wj
+    hjo = wj
+
+    if speedBox then
+        speedBox.Text = tostring(roundNumber(wj, 3))
+    end
+
+    fg = fg + 1
+    ku = false
+    zd = true
+    vft = false
+    cek = false
+    pa = pa + 1
+
+    nee = 0
+    bmj = true
+    ucuz = false
+
+    xbk = {}
+    bzg_ = {}
+
+    _px.Visible = false
+    MiniLogo.Visible = false
+    sw.Visible = true
+
+    fft.Text = "● REC LIVE"
+    wm.Text = "Timer: 00:00.00"
+    w_uw.Text = "Frames: 0"
+
+    duma = os.clock()
+    ye = hrp.Position
+    aqn = nil
+    slv = -999
+    ul = 0
+    wsr = -999
+    mnxl = nil
+    pi = -999
+    m_m = getEquippedToolName(char)
+
+    local _of = getHumanoidStateName(hum)
+    local hkam = wj
+    local ef = m_m or ""
+    local suc = duma
+
+    local nhx = os.clock() + 0.35
+    local vx
+    vx = addConnection(RunService.Heartbeat:Connect(function()
+        if not zd or os.clock() >= nhx then
+            if vx then vx:Disconnect() vx = nil end
+            return
+        end
+        local c = LocalPlayer.Character
+        local h = c and c:FindFirstChildOfClass("Humanoid")
+        local r = c and c:FindFirstChild("HumanoidRootPart")
+        if h and r then
+            pcall(function()
+                h.Jump = false
+                local v = r.AssemblyLinearVelocity
+                if v.Y > 0 then
+                    r.AssemblyLinearVelocity = Vector3.new(v.X, 0, v.Z)
+                end
+                local s = getHumanoidStateName(h)
+                if s == "Jumping" or s == "Freefall" then
+                    h:ChangeState(Enum.HumanoidStateType.Running)
+                end
+            end)
+        end
+    end))
+
+    if zu then
+        zu:Disconnect()
+        zu = nil
+    end
+
+    zu = RunService.Heartbeat:Connect(function(dt)
+        if not zd then return end
+        if vft then return end
+
+        local gh = LocalPlayer.Character
+        if not gh then return end
+
+        local dl = gh:FindFirstChildOfClass("Humanoid")
+        local rim = gh:FindFirstChild("HumanoidRootPart")
+        if not dl or not rim then return end
+
+        local xf = tonumber(dl.WalkSpeed) or 0
+        if xf > 0 then
+            local vab = getRecordToolNameFast(gh)
+            if vab ~= "" then
+                pc = vab
+                kkvu = math.max(tonumber(kkvu) or 0, xf)
+            elseif not kkvu then
+                kkvu = xf
+            end
+        end
+
+        local p_u = os.clock() - suc
+
+        local stNow = getHumanoidStateName(dl)
+        local toolNow = getRecordToolNameFast(gh) or ""
+        local wsNow = xf
+        local floorNow = getHumanoidFloorMaterialNameSafe(dl)
+        local hx = isGroundFloorMaterialName(floorNow)
+        local isAir = recordIsAirStateText(stNow) and not hx
+
+        local esq = (stNow ~= _of)
+        local kqpy = (toolNow ~= ef)
+        local afe = math.abs(wsNow - hkam) >= 0.5
+        local jnza = esq or kqpy or afe
+
+        local sampleDt = isAir and uc or fy
+        local rdr = p_u - slv
+
+        if not jnza and rdr < sampleDt then
+            updateOverlay(p_u, false)
+            return
+        end
+
+        if not jnza and not isAir then
+            local moving = isRealMovement(dl, rim, ye)
+            if not moving then
+
+                if (p_u - slv) < 0.5 then
+                    updateOverlay(p_u, false)
+                    return
+                end
+            end
+        end
+
+        local fr = makeFrame(p_u, dl, rim)
+        table.insert(xbk, fr)
+
+        slv = p_u
+        ye = rim.Position
+        _of = stNow
+        hkam = wsNow
+        ef = toolNow
+
+        updateOverlay(p_u, false)
+    end)
+
+    notify("Record", "LIVE record aktif: Delta no false jump gundukan + anti speed spike.", 3)
+end
+
+le = function()
+    cek = true
+    pa = pa + 1
+    vft = false
+
+    if qpw then
+        qpw.Text = "ROLL"
+        qpw.BackgroundColor3 = Color3.fromRGB(80, 95, 170)
+    end
+
+    if not zd then
+        sw.Visible = false
+        _px.Visible = true
+        restoreCharacterControl()
+        return
+    end
+
+    zd = false
+
+    if zu then
+        zu:Disconnect()
+        zu = nil
+    end
+
+    bzg_ = deepCopy(xbk) or {}
+
+    sw.Visible = false
+    _px.Visible = true
+
+    restoreCharacterControl()
+
+    if #bzg_ > 0 then
+        if dxay and trimText(dxay.Text) == "" then
+            dxay.Text = getNextDefaultName()
+        end
+
+        notify("Stop", "Record selesai. Frame bersih: " .. tostring(#bzg_), 3)
+    else
+        notify("Stop", "Tidak ada gerakan yang terekam", 3)
+    end
+end
+
+function getFrameCFrame(fr)
+    local pos = tableToVec(fr.position)
+    local yaw = tonumber(fr.rotation) or 0
+    return CFrame.new(pos) * CFrame.Angles(0, yaw, 0)
+end
+
+function applyFrameMeta(fr, hum)
+    if not fr or not hum then
+        return
+    end
+
+    if not ph then
+        pcall(function()
+            local ws = tonumber(fr.jqa)
+            if ws and ws > 0 and ws > (tonumber(hum.WalkSpeed) or 0) then
+                hum.WalkSpeed = ws
+            end
+        end)
+    end
+
+    if not xguu then
+        pcall(function()
+            hum.HipHeight = tonumber(fr.hipHeight) or hum.HipHeight
+        end)
+    end
+
+    if fr.jump == true and not fl then
+        pcall(function()
+            hum.Jump = true
+            hum:ChangeState(Enum.HumanoidStateType.Jumping)
+        end)
+    end
+
+    local st = tostring(fr.states or "")
+    local now = os.clock()
+
+    pcall(function()
+        local xswd = (st == "Jumping" or st == "Freefall")
+        local xc = now - nee
+
+        if st == "Jumping" then
+
+            if xc >= wnw then
+                nee = now
+                bmj = false
+
+                if not ucuz then
+                    ucuz = true
+                    task.delay(feb, function()
+                        pcall(function()
+                            hum.Jump = true
+                            hum:ChangeState(Enum.HumanoidStateType.Jumping)
+                            ucuz = false
+                        end)
+                    end)
+                end
+            end
+        elseif st == "Freefall" then
+            if xc >= wnw then
+                nee = now
+                bmj = false
+                hum:ChangeState(Enum.HumanoidStateType.Freefall)
+            end
+        elseif st == "Climbing" then
+            bmj = false
+            hum:ChangeState(Enum.HumanoidStateType.Climbing)
+        elseif st == "Swimming" then
+            bmj = false
+            hum:ChangeState(Enum.HumanoidStateType.Swimming)
+        elseif st == "Running" then
+
+            if not bmj then
+                nee = now
+                bmj = true
+            end
+            hum:ChangeState(Enum.HumanoidStateType.Running)
+        end
+    end)
+end
+
+function equipFrameTool(fr, char, hum)
+    if not fr or not fr.tool or fr.tool == "" then
+        return
+    end
+
+    pcall(function()
+        local toolName = tostring(fr.tool)
+
+        if getEquippedToolName(char) ~= toolName then
+            local tool = char:FindFirstChild(toolName)
+
+            if not tool and LocalPlayer:FindFirstChild("Backpack") then
+                tool = LocalPlayer.Backpack:FindFirstChild(toolName)
+            end
+
+            if tool and tool:IsA("Tool") then
+                hum:EquipTool(tool)
+            end
+        end
+    end)
+end
+
+function applyFrameInstant(fr)
+    local char, hum, hrp = getCharacter()
+    if not hum or not hrp or type(fr) ~= "table" then
+        return
+    end
+
+    local sxzf = isNoShiftLockFrame(fr)
+
+    pcall(function()
+        hum.AutoRotate = false
+    end)
+
+    applyFrameMeta(fr, hum)
+    equipFrameTool(fr, char, hum)
+
+    local moveDir = tableToVec(fr.moveDirection)
+    if moveDir.Magnitude > 0.01 then
+        pcall(function()
+            hum:Move(moveDir.Unit, true)
+        end)
+    end
+
+    pcall(function()
+        hrp.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
+        hrp.AssemblyAngularVelocity = Vector3.new(0, 0, 0)
+    end)
+
+    pcall(function()
+        local pos = tableToVec(fr.position)
+
+        hrp.CFrame = getFrameCFrame(fr)
+    end)
+end
+
+function getPlaybackFrameHorizontalSpeed(fr)
+    if type(fr) ~= "table" then
+        return 0
+    end
+
+    local city = tableToVec(fr.city)
+    local h = Vector3.new(city.X, 0, city.Z).Magnitude
+    if h > 0.05 then
+        return h
+    end
+
+    local ws = tonumber(fr.jqa) or tonumber(fr.ws) or 0
+    if ws > 0 then
+        return ws
+    end
+
+    return 0
+end
+
+function isIdlePlaybackSegment(a, b)
+    if not a or not b then return false end
+    local sa = tostring(a.states or "")
+    local sb = tostring(b.states or "")
+    if sa == "Jumping" or sa == "Freefall" or sa == "FallingDown"
+        or sb == "Jumping" or sb == "Freefall" or sb == "FallingDown"
+        or a.jump == true or b.jump == true then
+        return false
+    end
+    local pa = tableToVec(a.position)
+    local pb = tableToVec(b.position)
+    local hd = Vector3.new(pa.X - pb.X, 0, pa.Z - pb.Z).Magnitude
+    local vd = math.abs(pa.Y - pb.Y)
+    if hd > 0.18 or vd > 0.18 then return false end
+    local ca = tableToVec(a.city); local cb = tableToVec(b.city)
+    if Vector3.new(ca.X,0,ca.Z).Magnitude > 0.6 then return false end
+    if Vector3.new(cb.X,0,cb.Z).Magnitude > 0.6 then return false end
+    return true
+end
+
+function getCurrentHorizontalSpeed()
+    local _, hum, hrp = getCharacter()
+    if not hrp then
+        return 0
+    end
+
+    local ok, vel = pcall(function()
+        return hrp.AssemblyLinearVelocity
+    end)
+
+    if ok and vel then
+        local speed = Vector3.new(vel.X, 0, vel.Z).Magnitude
+        if speed > 0.2 then
+            return speed
+        end
+    end
+
+    if hum then
+        return tonumber(hum.WalkSpeed) or zudm
+    end
+
+    return zudm
+end
+
+function setSpeedFromCurrent()
+    local spd = getCurrentHorizontalSpeed()
+
+    if spd <= 0 then
+        notify("Speed", "Speed tidak terdeteksi. Jalan dulu lalu pencet lagi.", 3)
+        return
+    end
+
+    spd = setSyncBaseSpeed(spd, true)
+
+    notify("Speed", "PLAYBACK SPEED diset: " .. tostring(spd) .. " stud/s", 3)
+end
+
+function buildBridgeFramesBetween(cst, nextFrame, stepDistance, maxFrames, maxDistance)
+    local result = {}
+
+    if not cst or not nextFrame then
+        return result
+    end
+
+    stepDistance = tonumber(stepDistance) or l_
+    maxFrames = tonumber(maxFrames) or zhf
+    maxDistance = tonumber(maxDistance) or tuxi
+
+    local p1 = tableToVec(cst.position)
+    local p2 = tableToVec(nextFrame.position)
+    local dist = (p2 - p1).Magnitude
+
+    if dist > maxDistance then
+        return result
+    end
+
+    if dist <= stepDistance then
+        return result
+    end
+
+    local steps = math.ceil(dist / stepDistance)
+
+    if steps < 2 then
+        steps = 2
+    end
+
+    if steps > maxFrames then
+        steps = maxFrames
+    end
+
+    local r1 = tonumber(cst.rotation) or 0
+    local r2 = tonumber(nextFrame.rotation) or r1
+
+    local t1 = tonumber(cst.times) or tonumber(cst.t) or 0
+    local t2 = tonumber(nextFrame.times) or tonumber(nextFrame.t) or (t1 + iy * (steps + 1))
+    if t2 <= t1 then
+        t2 = t1 + iy * (steps + 1)
+    end
+
+    local dir = p2 - p1
+    local moveDir = Vector3.new(0, 0, 0)
+    if dir.Magnitude > 0.01 then
+        moveDir = dir.Unit
+    end
+
+    local yud = math.clamp(dist / math.max(t2 - t1, iy), 8, slw)
+
+    for i = 1, steps do
+        local alpha = i / (steps + 1)
+        local eased = smoothStep(alpha)
+        local pos = p1:Lerp(p2, eased)
+        local rot = lerpAngle(r1, r2, eased)
+
+        local fr = deepCopy(nextFrame)
+        fr.jump = false
+        fr.states = "Running"
+        fr.position = vecToTable(pos)
+        fr.rotation = roundNumber(rot, 5)
+        fr.moveDirection = vecToTable(moveDir)
+        fr.city = vecToTable(moveDir * yud)
+        fr.ground = nil
+        fr.times = roundNumber(t1 + ((t2 - t1) * alpha), 9)
+        fr.t = fr.times
+
+        table.insert(result, fr)
+    end
+
+    return result
+end
+
+function normalizePlaybackTimesKeepOriginal(frames)
+    local result = {}
+    local baseT = nil
+    local lastT = 0
+
+    for i, fr in ipairs(frames or {}) do
+        local copy = deepCopy(fr)
+        local rawT = tonumber(copy.times) or tonumber(copy.t) or 0
+
+        if not baseT then
+            baseT = rawT
+        end
+
+        local t = rawT - baseT
+        if i == 1 then
+            t = 0
+        elseif t <= lastT then
+            local prev = result[#result]
+            local hd = prev and horizontalDistance(tableToVec(prev.position), tableToVec(copy.position)) or 0
+            local spd = math.max(getPlaybackFrameHorizontalSpeed(prev), getPlaybackFrameHorizontalSpeed(copy), zudm)
+            t = lastT + math.clamp(hd / math.max(spd, 1), ierz, gxt)
+        end
+
+        copy.times = roundNumber(t, 9)
+        copy.t = copy.times
+        table.insert(result, copy)
+        lastT = t
+    end
+
+    return result
+end
+
+function preparePlaybackFrames(rawFrames)
+
+    local clean = sanitizeFrames(rawFrames, false)
+    if not clean or #clean <= 0 then
+        return nil
+    end
+
+    local result = {}
+    local cst = nil
+
+    for _, fr in ipairs(clean) do
+        local newFrame = deepCopy(fr)
+
+        if not cst then
+            table.insert(result, newFrame)
+            cst = newFrame
+        else
+            local lastPos = tableToVec(cst.position)
+            local newPos = tableToVec(newFrame.position)
+            local dist = (newPos - lastPos).Magnitude
+            local forceCut = newFrame.seam == true or cst.cutNext == true or dist > tuxi
+
+            if forceCut then
+                newFrame.seam = true
+                table.insert(result, newFrame)
+                cst = newFrame
+            elseif dist < lmg and newFrame.jump ~= true and not xswd(newFrame.states) then
+
+            else
+                if dist > (l_ * 2.4) then
+                    local bridge = buildBridgeFramesBetween(cst, newFrame, l_, zhf, tuxi)
+
+                    for _, bridgeFrame in ipairs(bridge) do
+                        table.insert(result, bridgeFrame)
+                        cst = bridgeFrame
+                    end
+                end
+
+                table.insert(result, newFrame)
+                cst = newFrame
+            end
+        end
+    end
+
+    if #result <= 0 then
+        return nil
+    end
+
+    return normalizePlaybackTimesKeepOriginal(result)
+end
+
+function setPlaybackButtonState(active)
+    if not eggg then
+        return
+    end
+
+    if active then
+        eggg.Text = "STOP PLAY"
+        eggg.BackgroundColor3 = Color3.fromRGB(190, 70, 75)
+    else
+        eggg.Text = "STOP PLAY"
+        eggg.BackgroundColor3 = Color3.fromRGB(155, 60, 65)
+    end
+end
+
+wf = function(showMsg)
+    if not ku then
+        if showMsg then
+            notify("Playback", "Tidak ada playback yang berjalan", 2)
+        end
+        return
+    end
+
+    fg = fg + 1
+    ku = false
+    setPlaybackButtonState(false)
+
+    local _, hum, hrp = getCharacter()
+    if hrp then
+        pcall(function()
+            hrp.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
+            hrp.AssemblyAngularVelocity = Vector3.new(0, 0, 0)
+        end)
+    end
+
+    if hum then
+        pcall(function()
+            hum:Move(Vector3.new(0, 0, 0), true)
+        end)
+    end
+
+    restoreCharacterControl()
+
+    if showMsg then
+        notify("Playback", "Playback distop", 2)
+    end
+end
+
+function getFrameStateText(fr)
+    return tostring((fr and (fr.states or fr.state)) or "Running")
+end
+
+function isJumpStateText(st)
+    st = tostring(st or "")
+    return st == "Jumping" or st == "Freefall" or st == "FallingDown"
+end
+
+function getFrameVelocityVector(fr)
+    if type(fr) ~= "table" then
+        return Vector3.new(0, 0, 0)
+    end
+
+    local city = tableToVec(fr.city)
+    if city.Magnitude > 0.05 then
+        return city
+    end
+
+    if type(fr.velocity) == "table" then
+        local v = tableToVec(fr.velocity)
+        if v.Magnitude > 0.05 then
+            return v
+        end
+    end
+
+    return Vector3.new(0, 0, 0)
+end
+
+function getFrameHorizontalVelocity(fr)
+    local v = getFrameVelocityVector(fr)
+    return Vector3.new(v.X, 0, v.Z).Magnitude
+end
+
+function estimateRecordedPlaybackSpeedBitwise(frames)
+    local values = {}
+
+    for i, fr in ipairs(frames or {}) do
+        local nn = getFrameHorizontalVelocity(fr)
+        local jqa = tonumber(fr.jqa) or tonumber(fr.ws) or 0
+        local value = math.max(nn, jqa)
+
+        if value >= mpm and value <= slw then
+            table.insert(values, value)
+        end
+
+        if i > 1 then
+            local prev = frames[i - 1]
+            local dt = (tonumber(fr.times) or tonumber(fr.t) or 0) - (tonumber(prev.times) or tonumber(prev.t) or 0)
+            if dt > 0.002 then
+                local hd = horizontalDistance(tableToVec(prev.position), tableToVec(fr.position))
+                local spd = hd / dt
+                if spd >= mpm and spd <= slw then
+                    table.insert(values, spd)
+                end
+            end
+        end
+    end
+
+    if #values <= 0 then
+        return zudm
+    end
+
+    table.sort(values)
+
+    local idx = math.floor(#values * 0.75)
+    if idx < 1 then
+        idx = 1
+    end
+
+    return roundNumber(math.clamp(values[idx] or zudm, mpm, slw), 1)
+end
+
+function getPlaybackSpeedForFrames(frames)
+    local vael = estimateRecordedPlaybackSpeedBitwise(frames)
+    local raw = tostring(speedBox and speedBox.Text or "AUTO")
+    raw = raw:gsub(",", ".")
+    raw = raw:gsub("^%s+", "")
+    raw = raw:gsub("%s+$", "")
+
+    local manual = tonumber(raw)
+    if manual and manual > 0 then
+        manual = math.clamp(manual, mpm, slw)
+        jckq = manual
+
+        hjo = vael
+        return roundNumber(manual, 1), true, vael
+    end
+
+    jckq = vael
+    hjo = vael
+
+    if speedBox then
+        speedBox.Text = "AUTO"
+    end
+
+    return vael, false, vael
+end
+
+function findPreparedFrameAtTimeFast(frames, ubo)
+    if not frames or #frames <= 1 then
+        return 1
+    end
+
+    local left = 1
+    local right = #frames - 1
+
+    while left <= right do
+        local mid = math.floor((left + right) / 2)
+        local a = frames[mid]
+        local b = frames[mid + 1]
+        local ta = tonumber(a.times) or tonumber(a.t) or 0
+        local tb = tonumber(b.times) or tonumber(b.t) or ta
+
+        if ubo >= ta and ubo <= tb then
+            return mid
+        elseif ubo < ta then
+            right = mid - 1
+        else
+            left = mid + 1
+        end
+    end
+
+    if ubo <= 0 then
+        return 1
+    end
+
+    return math.max(1, #frames - 1)
+end
+
+function applyFrameBitwiseStyle(a, b, alpha, hum, hrp, sjt, mi)
+    if not a or not b or not hum or not hrp then
+        return
+    end
+
+    local pa = tableToVec(a.position)
+    local pb = tableToVec(b.position)
+
+    local ra = tonumber(a.rotation) or 0
+    local rb = tonumber(b.rotation) or ra
+
+    local eased = math.clamp(alpha or 0, 0, 1)
+    local tq = pa:Lerp(pb, eased)
+    local yaw = lerpAngle(ra, rb, eased)
+
+    local st = getFrameStateText(b)
+
+    if isIdlePlaybackSegment(a, b) then
+        pcall(function()
+            hum.AutoRotate = false
+            hrp.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
+            hrp.AssemblyAngularVelocity = Vector3.new(0, 0, 0)
+            hrp.CFrame = CFrame.new(pa) * CFrame.Angles(0, ra, 0)
+            hum:ChangeState(Enum.HumanoidStateType.Standing)
+            hum.Sit = false
+            hum.PlatformStand = false
+        end)
+        return
+    end
+
+    if RUN_PLAYBACK_VISUAL_GUARD
+        and not isJumpStateText(st)
+        and st ~= "Freefall"
+        and st ~= "FallingDown"
+        and st ~= "Climbing"
+        and st ~= "Swimming"
+        and b.seam ~= true
+        and a.cutNext ~= true
+        and hrp
+    then
+        local nowPos = hrp.Position
+        local kzq = (tq - nowPos).Magnitude
+        if kzq > (RUN_PLAYBACK_BIG_GAP_DISTANCE or 6.2) then
+            local step = math.max(RUN_PLAYBACK_MAX_VISUAL_STEP or 4.25, 1)
+            tq = nowPos:Lerp(tq, math.clamp(step / kzq, 0.05, 1))
+        end
+    end
+
+    local timeDiff = (tonumber(b.times) or tonumber(b.t) or 0) - (tonumber(a.times) or tonumber(a.t) or 0)
+    if timeDiff <= 0.001 then
+        timeDiff = iy
+    end
+
+    local mapVel = getFrameVelocityVector(b)
+    if mapVel.Magnitude < 0.05 then
+        mapVel = (pb - pa) / math.max(timeDiff, 0.001)
+    end
+
+    local spdMul = math.clamp(tonumber(sjt) or 1, 0.05, 25)
+    mapVel = mapVel * spdMul
+
+    local sr = (pb - pa) / math.max(timeDiff, 0.001)
+    sr = sr * spdMul
+
+    local moveDir = tableToVec(b.moveDirection)
+    if moveDir.Magnitude > 0.01 then
+        pcall(function()
+            hum:Move(moveDir.Unit, true)
+        end)
+    end
+
+    pcall(function()
+        local targetWs = tonumber(mi) or tonumber(b.jqa) or zudm
+        hum.WalkSpeed = math.clamp(targetWs, mpm, slw)
+        hum.Sit = false
+        hum.PlatformStand = false
+
+        if not xguu then
+            hum.HipHeight = tonumber(b.hipHeight) or hum.HipHeight
+        end
+    end)
+
+    local kdob = (b.jump == true) or isJumpStateText(st)
+    local uofn = st == "Freefall" or st == "FallingDown" or sr.Y < -2 or mapVel.Y < -2
+    local hs = st == "Climbing"
+    local hf = st == "Swimming"
+
+    if bmj and math.abs(sr.Y) < wcpy then
+
+        kdob = false
+        uofn = false
+    end
+
+    pcall(function()
+
+        hum.AutoRotate = false
+        hrp.CFrame = CFrame.new(tq) * CFrame.Angles(0, yaw, 0)
+
+        local hVel = Vector3.new(mapVel.X, 0, mapVel.Z)
+
+        local mnf = math.max(
+            getFrameHorizontalVelocity(a),
+            getFrameHorizontalVelocity(b),
+            tonumber(mi) or zudm,
+            mpm
+        )
+        local dv = math.max(mnf * df_u, mpm)
+
+        if hVel.Magnitude > dv then
+            hVel = hVel.Unit * dv
+        end
+
+        local yVel = math.clamp(mapVel.Y, -220, 170)
+
+        if kdob then
+
+            local fhX = sr.X
+            local fhZ = sr.Z
+            local fhMag = math.sqrt(fhX * fhX + fhZ * fhZ)
+            if fhMag > dv and fhMag > 0 then
+                local k = dv / fhMag
+                fhX, fhZ = fhX * k, fhZ * k
+            end
+            local fyVel = math.clamp(sr.Y, -500, 300)
+
+            hrp.AssemblyLinearVelocity = Vector3.new(fhX, fyVel, fhZ)
+            hrp.AssemblyAngularVelocity = Vector3.new(0, 0, 0)
+
+            if uofn then
+                hum.Jump = false
+                hum:ChangeState(Enum.HumanoidStateType.Freefall)
+            else
+                hum.Jump = true
+                hum:ChangeState(Enum.HumanoidStateType.Jumping)
+            end
+
+        elseif hs then
+            hrp.AssemblyLinearVelocity = Vector3.new(hVel.X * 0.25, math.clamp(yVel, -50, 50), hVel.Z * 0.25)
+            hrp.AssemblyAngularVelocity = Vector3.new(0, 0, 0)
+            hum:ChangeState(Enum.HumanoidStateType.Climbing)
+
+        elseif hf then
+            hrp.AssemblyLinearVelocity = Vector3.new(hVel.X, yVel, hVel.Z)
+            hrp.AssemblyAngularVelocity = Vector3.new(0, 0, 0)
+            hum:ChangeState(Enum.HumanoidStateType.Swimming)
+
+        else
+
+            hrp.AssemblyLinearVelocity = Vector3.new(hVel.X, math.clamp(yVel, -80, 80), hVel.Z)
+            hrp.AssemblyAngularVelocity = Vector3.new(0, 0, 0)
+
+            if hVel.Magnitude > 0.45 then
+                hum:ChangeState(Enum.HumanoidStateType.Running)
+            else
+                hum:ChangeState(Enum.HumanoidStateType.Standing)
+            end
+        end
+    end)
+end
+
+function findNearestPreparedFrameToPosition(frames, position)
+    if not frames or #frames <= 0 or typeof(position) ~= "Vector3" then
+        return 1, 0
+    end
+
+    local bfu = 1
+    local hp = (tableToVec(frames[1].position) - position).Magnitude
+    local step = math.max(1, math.floor(#frames / 500))
+
+    for i = 1, #frames, step do
+        local pos = tableToVec(frames[i].position)
+        local distance = (pos - position).Magnitude
+        if distance < hp then
+            hp = distance
+            bfu = i
+        end
+    end
+
+    local dc = math.min(step, 50)
+    for i = math.max(1, bfu - dc), math.min(#frames, bfu + dc) do
+        local pos = tableToVec(frames[i].position)
+        local distance = (pos - position).Magnitude
+        if distance < hp then
+            hp = distance
+            bfu = i
+        end
+    end
+
+    return bfu, hp
+end
+
+function getBitwiseSmartStartForOnium(frames)
+    local _, hum, hrp = getCharacter()
+    if not hrp or not frames or #frames < 2 then
+        return 1, tonumber(frames and frames[1] and (frames[1].times or frames[1].t)) or 0
+    end
+
+    local firstT = tonumber(frames[1].times) or tonumber(frames[1].t) or 0
+    local lastT = tonumber(frames[#frames].times) or tonumber(frames[#frames].t) or firstT
+    local gam = math.max(lastT - _lc, firstT)
+
+    local startPos = tableToVec(frames[1].position)
+    local ek = tableToVec(frames[#frames].position)
+    local ftnt = (ek - hrp.Position).Magnitude
+
+    local bfu, distanceTo = findNearestPreparedFrameToPosition(frames, hrp.Position)
+    bfu = math.clamp(tonumber(bfu) or 1, 1, #frames - 1)
+    local reog = tonumber(frames[bfu] and (frames[bfu].times or frames[bfu].t)) or firstT
+
+    if ftnt <= kkuq and reog >= gam then
+        notify("Smart Resume", "Masih di FINISH, balik ke START", 1)
+        return 1, firstT
+    end
+
+    if distanceTo > 50 then
+        notify("Smart Resume", "Jauh dari path, mulai dari START", 1)
+        return 1, firstT
+    end
+
+    if reog >= gam then
+        notify("Smart Resume", "Dekat akhir, lanjut dari titik terdekat", 1)
+        return bfu, reog
+    end
+
+    notify("Smart Resume", "Mulai dari titik terdekat", 1)
+    return bfu, reog
+end
+
+function playFrames(frames, checkpointName)
+    frames = preparePlaybackFrames(frames)
+
+    if not frames or #frames <= 1 then
+        notify("Playback", "Data checkpoint kosong/rusak", 3)
+        return
+    end
+
+    captureMapSpeedBeforePlayback()
+
+    fg = fg + 1
+    local myToken = fg
+    ku = true
+    setPlaybackButtonState(true)
+
+    local mi, manualMode, recordedBaseSpeed = getPlaybackSpeedForFrames(frames)
+    local sjt = math.clamp((tonumber(mi) or recordedBaseSpeed) / math.max(tonumber(recordedBaseSpeed) or zudm, 1), 0.05, 25)
+
+    local tbq = sjt
+    local wx = sjt
+    local modeText = manualMode and "MANUAL" or "AUTO MAP"
+
+    if rmh and gf then
+        tbq = 1
+        wx = 1
+        sjt = 1
+        modeText = "RAW MAP"
+    end
+
+    task.spawn(function()
+        notify(
+            "Playback",
+            "Play " .. tostring(checkpointName) .. " | " .. modeText .. " | speed " .. tostring(mi),
+            3
+        )
+
+        local char, hum, hrp = getCharacter()
+        if not hum or not hrp then
+            ku = false
+            setPlaybackButtonState(false)
+            return
+        end
+
+        local cmev = hum.AutoRotate
+        local ta = hum.WalkSpeed
+        local vm = hum.JumpPower
+
+        pcall(function()
+
+            hum.AutoRotate = false
+            hum.PlatformStand = false
+            hum.Sit = false
+            hum.Jump = false
+            hum.WalkSpeed = math.clamp(mi, mpm, slw)
+            hrp.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
+            hrp.AssemblyAngularVelocity = Vector3.new(0, 0, 0)
+        end)
+
+        local xlnp, startTime = getBitwiseSmartStartForOnium(frames)
+        local uo = frames[xlnp] or frames[1]
+        equipFrameTool(uo, char, hum)
+        applyFrameInstant(uo)
+        task.wait(0.02)
+
+        local firstT = tonumber(frames[1].times) or tonumber(frames[1].t) or 0
+        local lastT = tonumber(frames[#frames].times) or tonumber(frames[#frames].t) or firstT
+        local gcuh = math.max(lastT - firstT, 0.001)
+        local pdq = math.clamp((tonumber(startTime) or firstT) - firstT, 0, gcuh)
+        local za = os.clock()
+
+        while myToken == fg and ku and pdq < gcuh do
+            char, hum, hrp = getCharacter()
+            if not hum or not hrp then
+                break
+            end
+
+            local now = os.clock()
+            local realDt = now - za
+            za = now
+
+            if realDt <= 0 then
+                realDt = 0.016
+            elseif realDt > 0.2 then
+                realDt = 0.1
+            end
+
+            pdq = pdq + (realDt * tbq)
+
+            local ulgh = firstT + pdq
+            local idx = findPreparedFrameAtTimeFast(frames, ulgh)
+            local a = frames[idx]
+            local b = frames[idx + 1]
+
+            if not a or not b then
+                break
+            end
+
+            local ta = tonumber(a.times) or tonumber(a.t) or 0
+            local tb = tonumber(b.times) or tonumber(b.t) or ta
+            local dt = tb - ta
+            if dt <= 0.001 then
+                dt = iy
+            end
+
+            local alpha = math.clamp((ulgh - ta) / dt, 0, 1)
+
+            if b.seam == true or a.cutNext == true then
+                equipFrameTool(b, char, hum)
+                applyFrameInstant(b)
+            else
+                equipFrameTool(b, char, hum)
+                applyFrameMeta(b, hum)
+                applyFrameBitwiseStyle(a, b, alpha, hum, hrp, wx, mi)
+            end
+
+            RunService.Heartbeat:Wait()
+        end
+
+        if myToken == fg and ku then
+            local ybe_ = frames[#frames]
+            applyFrameInstant(ybe_)
+        end
+
+        local _, finalHum, finalHrp = getCharacter()
+        if finalHrp then
+            pcall(function()
+                finalHrp.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
+                finalHrp.AssemblyAngularVelocity = Vector3.new(0, 0, 0)
+            end)
+        end
+
+        if finalHum then
+            pcall(function()
+                finalHum.AutoRotate = cmev
+                finalHum.PlatformStand = false
+                finalHum.Sit = false
+                finalHum.Jump = false
+                finalHum.WalkSpeed = math.max(tonumber(ta) or 0, mpm)
+                finalHum.JumpPower = vm or finalHum.JumpPower
+                finalHum:ChangeState(Enum.HumanoidStateType.Running)
+            end)
+        end
+
+        restoreCharacterControl()
+
+        ku = false
+        setPlaybackButtonState(false)
+        notify("Playback", "Selesai. Mode " .. modeText .. ", speed " .. tostring(mi), 2)
+    end)
+end
+
+ky = function(cp)
+    if not cp or not cp.frames then
+        return
+    end
+
+    playFrames(cp.frames, cp.name)
+end
+
+function findRollbackTargetObjectIndex()
+    if #xbk <= 2 then
+        return nil, nil
+    end
+
+    local dk = nil
+
+    for i = #xbk, 1, -1 do
+        local key = groundKeyFromFrame(xbk[i])
+        if key then
+            dk = key
+            break
+        end
+    end
+
+    if not dk then
+        return nil, nil
+    end
+
+    local _xi = false
+
+    for i = #xbk, 1, -1 do
+        local key = groundKeyFromFrame(xbk[i])
+
+        if key then
+            if key == dk then
+                _xi = true
+            elseif _xi then
+                return i, key
+            end
+        end
+    end
+
+    for i = 1, #xbk do
+        if groundKeyFromFrame(xbk[i]) == dk then
+            return i, dk
+        end
+    end
+
+    return nil, nil
+end
+
+ROLLBACK_GROUND_RAY_UP = 10
+ROLLBACK_GROUND_RAY_DOWN = 45
+ROLLBACK_MAX_GROUND_Y_DIFF = 8
+ROLLBACK_STAND_EXTRA_Y = 0.12
+ROLLBACK_MIN_HRP_GROUND_OFFSET = 2.2
+ROLLBACK_MAX_HRP_GROUND_OFFSET = 12
+
+function isRollbackPartValid(inst)
+    if not inst then
+        return false
+    end
+
+    if inst == workspace.Terrain then
+        return true
+    end
+
+    local ok, canCollide = pcall(function()
+        return inst.CanCollide
+    end)
+
+    if not ok then
+        return false
+    end
+
+    if canCollide ~= true then
+        return false
+    end
+
+    local char = LocalPlayer and LocalPlayer.Character
+    if char and inst:IsDescendantOf(char) then
+        return false
+    end
+
+    return true
+end
+
+ROLLBACK_CEILING_SKIP_MARGIN = 1.15
+ROLLBACK_GROUND_SCAN_LIMIT = 12
+ROLLBACK_HEAD_CHECK_UP = 5.5
+
+function makeRollbackRaycastParams(extraIgnore)
+    local char = LocalPlayer and LocalPlayer.Character
+    local svq = {}
+
+    if char then
+        table.insert(svq, char)
+    end
+
+    if type(extraIgnore) == "table" then
+        for _, inst in ipairs(extraIgnore) do
+            if inst then
+                table.insert(svq, inst)
+            end
+        end
+    end
+
+    local params = RaycastParams.new()
+
+    pcall(function()
+        params.FilterType = Enum.RaycastFilterType.Blacklist
+    end)
+
+    pcall(function()
+        params.FilterDescendantsInstances = svq
+    end)
+
+    pcall(function()
+        params.IgnoreWater = true
+    end)
+
+    return params
+end
+
+function raycastRollbackGround(pos)
+    if typeof(pos) ~= "Vector3" then
+        return nil
+    end
+
+    local qhix = {}
+    local origin = pos + Vector3.new(0, ROLLBACK_GROUND_RAY_UP, 0)
+    local cnd = Vector3.new(0, -(ROLLBACK_GROUND_RAY_UP + ROLLBACK_GROUND_RAY_DOWN), 0)
+
+    for _ = 1, ROLLBACK_GROUND_SCAN_LIMIT do
+        local params = makeRollbackRaycastParams(qhix)
+        local ok, result = pcall(function()
+            return workspace:Raycast(origin, cnd, params)
+        end)
+
+        if not ok or not result or not result.Instance then
+            return nil
+        end
+
+        local inst = result.Instance
+        local hitY = result.Position and result.Position.Y or -math.huge
+        local fudo = hitY > (pos.Y - ROLLBACK_CEILING_SKIP_MARGIN)
+
+        if fudo or not isRollbackPartValid(inst) then
+            table.insert(qhix, inst)
+        else
+            return result
+        end
+    end
+
+    return nil
+end
+
+function raycastRollbackCeiling(pos, hum)
+    if typeof(pos) ~= "Vector3" then
+        return nil
+    end
+
+    local params = makeRollbackRaycastParams()
+    local hip = tonumber(hum and hum.HipHeight) or 2
+    local origin = pos + Vector3.new(0, 1.0, 0)
+    local cnd = Vector3.new(0, math.max(ROLLBACK_HEAD_CHECK_UP, hip + 3.2), 0)
+
+    local ok, result = pcall(function()
+        return workspace:Raycast(origin, cnd, params)
+    end)
+
+    if ok and result and result.Instance and isRollbackPartValid(result.Instance) then
+        return result
+    end
+
+    return nil
+end
+
+function getRollbackHoldCFrame(targetCF, hum)
+
+    if targetCF and raycastRollbackCeiling(targetCF.Position, hum) then
+        return targetCF
+    end
+
+    return targetCF + Vector3.new(0, 0.85, 0)
+end
+
+function getRollbackRecordedGroundOffset(fr, hum)
+    local pos = tableToVec(fr and fr.position)
+    local offset = nil
+
+    if type(fr) == "table" and type(fr.ground) == "table" and type(fr.ground.hitPosition) == "table" then
+        local hit = tableToVec(fr.ground.hitPosition)
+        offset = pos.Y - hit.Y
+    end
+
+    if not offset or offset ~= offset or offset < ROLLBACK_MIN_HRP_GROUND_OFFSET or offset > ROLLBACK_MAX_HRP_GROUND_OFFSET then
+        offset = (tonumber(hum and hum.HipHeight) or tonumber(fr and fr.hipHeight) or 2) + 2
+    end
+
+    return math.clamp(offset, ROLLBACK_MIN_HRP_GROUND_OFFSET, ROLLBACK_MAX_HRP_GROUND_OFFSET)
+end
+
+function getSafeRollbackCFrame(fr, hum)
+    if type(fr) ~= "table" then
+        return nil, nil, "no_frame"
+    end
+
+    if isRollbackAirFrame(fr) then
+        return nil, nil, "air_frame"
+    end
+
+    local rawCF = getFrameCFrame(fr)
+    local rawPos = rawCF.Position
+    local hit = raycastRollbackGround(rawPos)
+
+    if not hit then
+        return nil, nil, "no_ground_now"
+    end
+
+    local offset = getRollbackRecordedGroundOffset(fr, hum)
+    local safePos = Vector3.new(
+        rawPos.X,
+        hit.Position.Y + offset + ROLLBACK_STAND_EXTRA_Y,
+        rawPos.Z
+    )
+
+    if math.abs(safePos.Y - rawPos.Y) > ROLLBACK_MAX_GROUND_Y_DIFF then
+        return nil, nil, "wrong_ground_y"
+    end
+
+    local _, yaw, _ = rawCF:ToOrientation()
+    local safeCF = CFrame.new(safePos) * CFrame.Angles(0, yaw, 0)
+
+    return safeCF, safePos, "ok"
+end
+
+function isSafeRollbackFrameIndex(index)
+    local _, hum = getCharacter()
+    local fr = xbk[index]
+    local cf = nil
+
+    if not fr then
+        return false
+    end
+
+    cf = select(1, getSafeRollbackCFrame(fr, hum))
+    return cf ~= nil
+end
+
+function findSafeRollbackIndex(xlnp)
+    xlnp = math.clamp(tonumber(xlnp) or #xbk, 1, #xbk)
+
+    for i = xlnp, 1, -1 do
+        if isSafeRollbackFrameIndex(i) then
+            return i
+        end
+    end
+
+    return nil
+end
+
+function isRollbackStillGrounded(pos, fr, hum)
+    local hit = raycastRollbackGround(pos)
+    if not hit then
+        return false
+    end
+
+    local offset = getRollbackRecordedGroundOffset(fr, hum)
+    local az = pos.Y - hit.Position.Y
+
+    return az >= (ROLLBACK_MIN_HRP_GROUND_OFFSET - 0.5)
+        and az <= (offset + 3.5)
+end
+
+function applyRollbackSmoothToFrame(ujjg, gjl)
+    local char, hum, hrp = getCharacter()
+    if not hum or not hrp or type(ujjg) ~= "table" then
+        return false
+    end
+
+    if not zd or not vft or cek or gjl ~= pa then
+        return false
+    end
+
+    local targetCF, tq, safeReason = getSafeRollbackCFrame(ujjg, hum)
+    if not targetCF or not tq then
+
+        return false
+    end
+
+    local cmev = hum.AutoRotate
+    local qyz = hum.PlatformStand
+
+    pcall(function()
+        hum.AutoRotate = false
+        hum.PlatformStand = true
+        hum:Move(Vector3.new(0, 0, 0), true)
+        hum:ChangeState(Enum.HumanoidStateType.Physics)
+    end)
+
+    pcall(function()
+        hrp.Anchored = true
+    end)
+
+    local holdCF = getRollbackHoldCFrame(targetCF, hum)
+
+    for i = 1, 10 do
+        if not zd or not vft or cek or gjl ~= pa then
+            pcall(function() hrp.Anchored = false end)
+            pcall(function()
+                hum.PlatformStand = qyz
+                hum.AutoRotate = cmev
+            end)
+            return false
+        end
+
+        pcall(function()
+            hrp.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
+            hrp.AssemblyAngularVelocity = Vector3.new(0, 0, 0)
+            hrp.CFrame = holdCF
+        end)
+
+        RunService.Heartbeat:Wait()
+    end
+
+    pcall(function()
+        hrp.CFrame = targetCF
+        hrp.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
+        hrp.AssemblyAngularVelocity = Vector3.new(0, 0, 0)
+    end)
+
+    task.wait(0.08)
+
+    pcall(function()
+        hrp.Anchored = false
+    end)
+
+    pcall(function()
+        hum.PlatformStand = qyz
+        hum.AutoRotate = cmev
+        hum.HipHeight = tonumber(ujjg.hipHeight) or hum.HipHeight
+        hum:ChangeState(Enum.HumanoidStateType.Running)
+        hum:Move(Vector3.new(0, 0, 0), true)
+    end)
+
+    for _ = 1, 3 do
+        RunService.Heartbeat:Wait()
+    end
+
+    local ebt = false
+    local okGround = false
+
+    pcall(function()
+        ebt = (hrp.Position - tq).Magnitude <= 7
+        okGround = isRollbackStillGrounded(hrp.Position, ujjg, hum)
+    end)
+
+    if ebt and okGround then
+        ye = hrp.Position
+        return true
+    end
+
+    return false
+end
+
+on = function()
+    if not zd then
+        notify("Rollback", "Recording belum berjalan", 2)
+        return
+    end
+
+    if vft then
+        cek = true
+        pa = pa + 1
+        vft = false
+
+        if qpw then
+            qpw.Text = "ROLL"
+            qpw.BackgroundColor3 = Color3.fromRGB(80, 95, 170)
+        end
+
+        if fft then
+            fft.Text = "● REC"
+        end
+
+        restoreCharacterControl()
+
+        local _, _, hrp = getCharacter()
+        if hrp then
+            ye = hrp.Position
+        end
+
+        updateOverlay()
+        notify("Rollback", "Rollback distop. Record lanjut dari posisi ini.", 2)
+        return
+    end
+
+    if #xbk <= 2 then
+        notify("Rollback", "Frame masih terlalu sedikit", 2)
+        return
+    end
+
+    vft = true
+    cek = false
+    pa = pa + 1
+
+    local gjl = pa
+
+    if fft then
+        fft.Text = "↶ ROLLBACK. klik lagi untuk STOP"
+    end
+
+    if qpw then
+        qpw.Text = "STOP ROLL"
+        qpw.BackgroundColor3 = Color3.fromRGB(190, 80, 55)
+    end
+
+    task.spawn(function()
+        local char, hum, hrp = getCharacter()
+        local cmev = nil
+
+        if hum then
+            cmev = hum.AutoRotate
+            pcall(function()
+                hum.AutoRotate = false
+            end)
+        end
+
+        local kg, targetReason = findRollbackBeforeJumpIndex()
+        local lrej = kg ~= nil and kg < #xbk
+
+        local nhay = nil
+        local jjb = false
+
+        if not lrej then
+            kg, nhay = findRollbackTargetObjectIndex()
+            jjb = kg ~= nil and kg < #xbk
+        end
+
+        local removed = 0
+
+        if lrej or jjb then
+
+            local zrar = findSafeRollbackIndex(kg)
+            if zrar then
+                kg = zrar
+            end
+
+            local ujjg = zrar and xbk[kg] or nil
+
+            local okMove = false
+            if ujjg
+                and zd
+                and vft
+                and not cek
+                and gjl == pa
+            then
+                okMove = applyRollbackSmoothToFrame(ujjg, gjl)
+            end
+
+            if okMove then
+                while #xbk > kg do
+                    table.remove(xbk, #xbk)
+                    removed = removed + 1
+                end
+            else
+                notify("Rollback", "Gagal balik: map menarik avatar. Frame tidak dihapus.", 3)
+            end
+
+            updateOverlay()
+        else
+
+            local okry = math.min(ofya, math.max(0, #xbk - 1))
+            local tryIndex = #xbk - 1
+
+            while zd
+                and vft
+                and not cek
+                and gjl == pa
+                and tryIndex >= 1
+                and removed < okry do
+
+                local ujjg = xbk[tryIndex]
+                if not ujjg then
+                    break
+                end
+
+                local okMove = applyRollbackSmoothToFrame(ujjg, gjl)
+                if okMove then
+                    while #xbk > tryIndex do
+                        table.remove(xbk, #xbk)
+                        removed = removed + 1
+                    end
+                    updateOverlay()
+                    break
+                end
+
+                tryIndex = tryIndex - 1
+            end
+
+            if removed <= 0 then
+                notify("Rollback", "Tidak ada posisi rollback yang aman. Frame tidak dihapus.", 3)
+            end
+        end
+
+        local _, finalHum, finalHrp = getCharacter()
+
+        if finalHum and cmev ~= nil then
+            pcall(function()
+                finalHum.AutoRotate = cmev
+            end)
+        end
+
+        if finalHrp then
+            pcall(function()
+                finalHrp.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
+                finalHrp.AssemblyAngularVelocity = Vector3.new(0, 0, 0)
+            end)
+
+            ye = finalHrp.Position
+        end
+
+        restoreCharacterControl()
+
+        if gjl == pa then
+
+            xbk = basicNormalizeFrames(xbk) or xbk
+            vft = false
+            cek = false
+
+            if qpw then
+                qpw.Text = "ROLL"
+                qpw.BackgroundColor3 = Color3.fromRGB(80, 95, 170)
+            end
+
+            if zd and fft then
+                fft.Text = "● REC"
+            end
+
+            updateOverlay()
+
+            if removed > 0 then
+                if lrej then
+                    notify("Rollback", "Balik ke posisi sebelum lompat | " .. tostring(removed) .. " frame dihapus", 3)
+                elseif jjb then
+                    notify("Rollback", "Balik ke object terakhir: " .. tostring(nhay or "object") .. " | " .. tostring(removed) .. " frame", 3)
+                else
+                    notify("Rollback", "Fallback mundur " .. tostring(removed) .. " frame", 3)
+                end
+            else
+                notify("Rollback", "Rollback berhenti", 2)
+            end
+        else
+            vft = false
+            cek = false
+
+            if qpw then
+                qpw.Text = "ROLL"
+                qpw.BackgroundColor3 = Color3.fromRGB(80, 95, 170)
+            end
+
+            if zd and fft then
+                fft.Text = "● REC"
+            end
+
+            xbk = basicNormalizeFrames(xbk) or xbk
+            updateOverlay()
+        end
+    end)
+end
+
+local hjh = 0.14
+local fnsv = 2.25
+local yuz = 0.08
+local x_zu = 0.035
+local jj = 0.035
+local cv = 0.055
+local pw = 0.004
+
+function getFrameState(fr)
+    return tostring(fr and (fr.states or fr.state) or "Running")
+end
+
+function getFramePosVector(fr)
+    return tableToVec(fr and fr.position)
+end
+
+function getFrameCityVector(fr)
+    return tableToVec(fr and fr.city)
+end
+
+function getFrameMoveVector(fr)
+    return tableToVec(fr and fr.moveDirection)
+end
+
+function getFrameHorizontalSpeed(fr)
+    local c = getFrameCityVector(fr)
+    return Vector3.new(c.X, 0, c.Z).Magnitude
+end
+
+function getFrameMoveMagnitude(fr)
+    local m = getFrameMoveVector(fr)
+    return Vector3.new(m.X, 0, m.Z).Magnitude
+end
+
+function getYawDiff(a, b)
+    local ay = tonumber(a and a.rotation) or 0
+    local by = tonumber(b and b.rotation) or ay
+    local d = by - ay
+    return math.abs(math.atan(math.sin(d), math.cos(d)))
+end
+
+function isMotionProtectedFrame(fr)
+    if not fr then
+        return false
+    end
+
+    local st = getFrameState(fr)
+
+    if mobileDeltaFrameHasGroundContact(fr) and st ~= "Climbing" and st ~= "Swimming" then
+        return false
+    end
+
+    if fr.jump == true then
+        return true
+    end
+
+    return st == "Jumping"
+        or st == "Freefall"
+        or st == "FallingDown"
+        or st == "Climbing"
+        or st == "Swimming"
+end
+
+function frameDistance(a, b)
+    if not a or not b then
+        return 0, 0, 0
+    end
+
+    local pa = getFramePosVector(a)
+    local pb = getFramePosVector(b)
+    local diff = pb - pa
+    local hd = Vector3.new(diff.X, 0, diff.Z).Magnitude
+    local vd = math.abs(diff.Y)
+    return diff.Magnitude, hd, vd
+end
+
+function isFrameIdleBetween(prev, fr, nextF, edgeMode)
+    if not fr then
+        return true
+    end
+
+    if isMotionProtectedFrame(fr) then
+        return false
+    end
+
+    local hv = getFrameHorizontalSpeed(fr)
+    local md = getFrameMoveMagnitude(fr)
+    local rotA = prev and getYawDiff(prev, fr) or 0
+    local rotB = nextF and getYawDiff(fr, nextF) or 0
+
+    if rotA >= jj or rotB >= jj then
+        return false
+    end
+
+    local dPrev = prev and select(1, frameDistance(prev, fr)) or 999
+    local dNext = nextF and select(1, frameDistance(fr, nextF)) or 999
+    local minDist = math.min(dPrev, dNext)
+
+    if edgeMode then
+        return minDist <= hjh
+            and hv <= fnsv
+            and md <= yuz
+    end
+
+    return minDist <= x_zu
+        and hv <= fnsv
+        and md <= yuz
+end
+
+function trimIdleStartEnd(frames)
+    if not frames or #frames <= 2 then
+        return frames or {}
+    end
+
+    local first = 1
+    local last = #frames
+
+    while first < last and isFrameIdleBetween(nil, frames[first], frames[first + 1], true) do
+        first = first + 1
+    end
+
+    while last > first and isFrameIdleBetween(frames[last - 1], frames[last], nil, true) do
+        last = last - 1
+    end
+
+    local out = {}
+    for i = first, last do
+        table.insert(out, deepCopy(frames[i]))
+    end
+
+    if #out <= 0 then
+        return frames
+    end
+
+    return out
+end
+
+function estimateCleanDt(prev, fr)
+    if not prev or not fr then
+        return 0
+    end
+
+    local rawDt = (tonumber(fr.times) or tonumber(fr.t) or 0) - (tonumber(prev.times) or tonumber(prev.t) or 0)
+    local _, hd, vd = frameDistance(prev, fr)
+    local c1 = getFrameCityVector(prev)
+    local c2 = getFrameCityVector(fr)
+    local hSpeed = math.max(
+        Vector3.new(c1.X, 0, c1.Z).Magnitude,
+        Vector3.new(c2.X, 0, c2.Z).Magnitude
+    )
+    local ySpeed = math.max(math.abs(c1.Y), math.abs(c2.Y))
+
+    local ytyd = nil
+    if hSpeed > 1 and hd > 0.005 then
+        ytyd = hd / hSpeed
+    end
+
+    if ySpeed > 1 and vd > 0.005 then
+        local yDt = vd / ySpeed
+        if ytyd then
+            ytyd = math.max(ytyd, yDt)
+        else
+            ytyd = yDt
+        end
+    end
+
+    local dt = rawDt
+
+    if dt <= 0 or dt > cv then
+        dt = ytyd or iy
+    end
+
+    if ytyd and dt > cv then
+        dt = ytyd
+    end
+
+    return math.clamp(dt, pw, cv)
+end
+
+function compactCleanTimes(frames)
+    local out = {}
+    local pdq = 0
+    local ewg = nil
+
+    for i, fr in ipairs(frames or {}) do
+        local copy = deepCopy(fr)
+        if i == 1 then
+            pdq = 0
+        else
+            pdq = pdq + estimateCleanDt(ewg or frames[i - 1], fr)
+        end
+
+        copy.times = roundNumber(pdq, 9)
+        copy.t = copy.times
+        table.insert(out, copy)
+        ewg = fr
+    end
+
+    return out
+end
+
+ANTI_KEDUT_EDGE_RATIO = 0.62
+ANTI_KEDUT_INTERNAL_RATIO = 0.38
+ANTI_KEDUT_DUP_DIST = 0.22
+ANTI_KEDUT_KEEP_DIST = 0.32
+ANTI_KEDUT_MIN_RUN_SPEED = 8
+ANTI_KEDUT_MIN_DT = 0.004
+ANTI_KEDUT_MAX_DT = 0.038
+ANTI_KEDUT_ROT_PROTECT = 0.20
+
+function antiKedutIsAir(fr)
+    if not fr then return false end
+    local st = tostring(fr.states or fr.state or "")
+    if mobileDeltaFrameHasGroundContact(fr) and st ~= "Climbing" and st ~= "Swimming" then
+        return false
+    end
+    if fr.jump == true then return true end
+    return st == "Jumping" or st == "Freefall" or st == "FallingDown" or st == "Climbing" or st == "Swimming"
+end
+
+function antiKedutPos(fr)
+    return tableToVec(fr and fr.position)
+end
+
+function antiKedutCity(fr)
+    return tableToVec(fr and fr.city)
+end
+
+function antiKedutMove(fr)
+    return tableToVec(fr and fr.moveDirection)
+end
+
+function antiKedutHDist(a, b)
+    if not a or not b then return 0 end
+    local pa = antiKedutPos(a)
+    local pb = antiKedutPos(b)
+    return Vector3.new(pb.X - pa.X, 0, pb.Z - pa.Z).Magnitude
+end
+
+function antiKedutVDist(a, b)
+    if not a or not b then return 0 end
+    local pa = antiKedutPos(a)
+    local pb = antiKedutPos(b)
+    return math.abs(pb.Y - pa.Y)
+end
+
+function antiKedutDist(a, b)
+    if not a or not b then return 0 end
+    return (antiKedutPos(b) - antiKedutPos(a)).Magnitude
+end
+
+function antiKedutHSpeed(fr)
+    local c = antiKedutCity(fr)
+    return Vector3.new(c.X, 0, c.Z).Magnitude
+end
+
+function antiKedutMoveMag(fr)
+    local m = antiKedutMove(fr)
+    return Vector3.new(m.X, 0, m.Z).Magnitude
+end
+
+function antiKedutYawDiff(a, b)
+    if not a or not b then return 0 end
+    local ay = tonumber(a.rotation) or 0
+    local by = tonumber(b.rotation) or ay
+    local d = by - ay
+    return math.abs(math.atan(math.sin(d), math.cos(d)))
+end
+
+function antiKedutBaseSpeed(frames)
+    local speeds = {}
+    for _, fr in ipairs(frames or {}) do
+        if fr and not antiKedutIsAir(fr) then
+            local h = antiKedutHSpeed(fr)
+            if h > 3 then
+                table.insert(speeds, h)
+            end
+        end
+    end
+    if #speeds <= 0 then
+        for _, fr in ipairs(frames or {}) do
+            local h = antiKedutHSpeed(fr)
+            if h > 3 then table.insert(speeds, h) end
+        end
+    end
+    if #speeds <= 0 then
+        return tonumber(hjo) or tonumber(jckq) or _d or zudm
+    end
+    table.sort(speeds)
+    local mid = math.floor((#speeds + 1) / 2)
+    local base = tonumber(speeds[mid]) or _d or zudm
+    return math.max(base, ANTI_KEDUT_MIN_RUN_SPEED)
+end
+
+function antiKedutTrimEdges(frames)
+    frames = frames or {}
+    if #frames <= 2 then return frames end
+    local base = antiKedutBaseSpeed(frames)
+    local first = 1
+    local last = #frames
+    while first < last do
+        local fr = frames[first]
+        local nxt = frames[first + 1]
+        if antiKedutIsAir(fr) then break end
+        local hv = antiKedutHSpeed(fr)
+        local md = antiKedutMoveMag(fr)
+        local d = antiKedutDist(fr, nxt)
+        local slow = hv < math.max(ANTI_KEDUT_MIN_RUN_SPEED, base * ANTI_KEDUT_EDGE_RATIO)
+        local tiny = d < ANTI_KEDUT_KEEP_DIST
+        if slow or md < 0.08 or tiny then first = first + 1 else break end
+    end
+    while last > first do
+        local fr = frames[last]
+        local prv = frames[last - 1]
+        if antiKedutIsAir(fr) then break end
+        local hv = antiKedutHSpeed(fr)
+        local md = antiKedutMoveMag(fr)
+        local d = antiKedutDist(prv, fr)
+        local slow = hv < math.max(ANTI_KEDUT_MIN_RUN_SPEED, base * ANTI_KEDUT_EDGE_RATIO)
+        local tiny = d < ANTI_KEDUT_KEEP_DIST
+        if slow or md < 0.08 or tiny then last = last - 1 else break end
+    end
+    local out = {}
+    for i = first, last do table.insert(out, deepCopy(frames[i])) end
+    if #out <= 0 then return frames end
+    return out
+end
+
+function antiKedutDirectionBetween(a, b)
+    if not a or not b then return Vector3.new(0, 0, 0) end
+    local pa = antiKedutPos(a)
+    local pb = antiKedutPos(b)
+    local flat = Vector3.new(pb.X - pa.X, 0, pb.Z - pa.Z)
+    if flat.Magnitude <= 0.001 then return Vector3.new(0, 0, 0) end
+    return flat.Unit
+end
+
+function antiKedutStabilizeRun(prev, fr, nextF, f_)
+    if rmh then
+
+        return fr
+    end
+    if not fr or antiKedutIsAir(fr) then return fr end
+    local dir = nil
+    if prev then dir = antiKedutDirectionBetween(prev, fr) end
+    if (not dir or dir.Magnitude <= 0.01) and nextF then dir = antiKedutDirectionBetween(fr, nextF) end
+    if dir and dir.Magnitude > 0.01 then
+        local hv = antiKedutHSpeed(fr)
+        local ws = tonumber(fr.jqa) or 0
+        local speed = math.max(hv, ws, tonumber(f_) or 0, ANTI_KEDUT_MIN_RUN_SPEED)
+        speed = math.clamp(speed, ANTI_KEDUT_MIN_RUN_SPEED, slw or 500000)
+        fr.moveDirection = vecToTable(dir)
+        fr.city = vecToTable(dir * speed)
+        fr.states = "Running"
+        fr.jump = false
+    end
+    return fr
+end
+
+function antiKedutCleanInternal(frames)
+    frames = frames or {}
+    if #frames <= 2 then return frames, 0 end
+    local base = antiKedutBaseSpeed(frames)
+    local out = {}
+    local removed = 0
+    for i = 1, #frames do
+        local fr = deepCopy(frames[i])
+        local prevRaw = frames[i - 1]
+        local nextRaw = frames[i + 1]
+        local last = out[#out]
+        local keep = true
+        if #out <= 0 or i == #frames then
+            keep = true
+        elseif antiKedutIsAir(fr) then
+            keep = true
+        else
+            local dLast = antiKedutDist(last, fr)
+            local hdLast = antiKedutHDist(last, fr)
+            local vdLast = antiKedutVDist(last, fr)
+            local hv = antiKedutHSpeed(fr)
+            local md = antiKedutMoveMag(fr)
+            local rot = math.max(antiKedutYawDiff(prevRaw, fr), antiKedutYawDiff(fr, nextRaw))
+            local twc = hv < math.max(ANTI_KEDUT_MIN_RUN_SPEED, base * ANTI_KEDUT_INTERNAL_RATIO)
+            if dLast < ANTI_KEDUT_DUP_DIST and vdLast < 0.08 then
+                keep = false
+            elseif twc and hdLast < ANTI_KEDUT_KEEP_DIST and md < 0.18 then
+                keep = false
+            elseif rot > ANTI_KEDUT_ROT_PROTECT and hdLast < ANTI_KEDUT_DUP_DIST and hv < base * 0.55 then
+                keep = false
+            else
+                keep = true
+            end
+        end
+        if keep then
+            fr = antiKedutStabilizeRun(out[#out], fr, nextRaw, base)
+            table.insert(out, fr)
+        else
+            removed = removed + 1
+        end
+    end
+    if #out <= 0 then return frames, removed end
+    return out, removed
+end
+
+function antiKedutCompactTimes(frames)
+    frames = frames or {}
+    if #frames <= 0 then return frames end
+    local base = antiKedutBaseSpeed(frames)
+    local out = {}
+    local t = 0
+    for i = 1, #frames do
+        local fr = deepCopy(frames[i])
+        if i == 1 then
+            t = 0
+        else
+            local prev = out[#out]
+            local d = antiKedutDist(prev, fr)
+            local hd = antiKedutHDist(prev, fr)
+            local vd = antiKedutVDist(prev, fr)
+            local hv = math.max(antiKedutHSpeed(prev), antiKedutHSpeed(fr), base)
+            local yv = math.max(math.abs(antiKedutCity(prev).Y), math.abs(antiKedutCity(fr).Y), 1)
+            local dt = 0
+            if antiKedutIsAir(prev) or antiKedutIsAir(fr) then
+                local hdt = 0
+                local vdt = 0
+                if hd > 0.005 then hdt = hd / math.max(hv, 1) end
+                if vd > 0.005 then vdt = vd / math.max(yv, 1) end
+                dt = math.max(hdt, vdt, ANTI_KEDUT_MIN_DT)
+                dt = math.clamp(dt, ANTI_KEDUT_MIN_DT, 0.055)
+            else
+                if d > 0.005 then dt = d / math.max(hv, 1) else dt = ANTI_KEDUT_MIN_DT end
+                dt = math.clamp(dt, ANTI_KEDUT_MIN_DT, ANTI_KEDUT_MAX_DT)
+            end
+            t = t + dt
+        end
+        fr.times = roundNumber(t, 9)
+        fr.t = fr.times
+        table.insert(out, fr)
+    end
+    return out
+end
+
+NO_IDLE_TURN_SMOOTH = true
+NO_IDLE_TURN_MIN_GAP = 0.10
+NO_IDLE_TURN_MIN_YAW = math.rad(18)
+NO_IDLE_TURN_MIN_FRAMES = 5
+NO_IDLE_TURN_MAX_FRAMES = 18
+NO_IDLE_TURN_MAX_DIST = 18
+
+function antiKedutSmoothIdleRotation(frames)
+    if not NO_IDLE_TURN_SMOOTH then
+        return frames
+    end
+
+    if type(frames) ~= "table" or #frames <= 2 then
+        return frames
+    end
+
+    local out = deepCopy(frames)
+
+    for i = 1, #out - 1 do
+        local a = out[i]
+        local b = out[i + 1]
+
+        if a and b and not antiKedutIsAir(a) and not antiKedutIsAir(b) then
+            local ta = tonumber(a.times) or tonumber(a.t) or 0
+            local tb = tonumber(b.times) or tonumber(b.t) or ta
+            local gap = tb - ta
+
+            local yawA = tonumber(a.rotation) or 0
+            local yawB = tonumber(b.rotation) or yawA
+            local delta = yawB - yawA
+            delta = math.atan(math.sin(delta), math.cos(delta))
+
+            local dist = antiKedutDist(a, b)
+
+            if gap >= NO_IDLE_TURN_MIN_GAP
+                and math.abs(delta) >= NO_IDLE_TURN_MIN_YAW
+                and dist <= NO_IDLE_TURN_MAX_DIST
+            then
+                local count = math.floor(math.abs(delta) / math.rad(7))
+                count = math.clamp(count, NO_IDLE_TURN_MIN_FRAMES, NO_IDLE_TURN_MAX_FRAMES)
+
+                local endIndex = math.min(#out, i + count)
+
+                if endIndex > i + 1 then
+                    for j = i + 1, endIndex do
+                        local alpha = (j - i) / math.max(endIndex - i, 1)
+                        local eased = smoothStep(alpha)
+
+                        out[j].rotation = roundNumber(yawA + (delta * eased), 9)
+
+                    end
+                end
+            end
+        end
+    end
+
+    return out
+end
+
+ANTI_KEDUT_REFERENCE_JUMP_ENABLED = true
+
+REF_JUMP_TARGET_GROUND_FRAMES = 7
+REF_JUMP_MAX_SCAN_GROUND_FRAMES = 18
+REF_JUMP_GAP_MAX_TIME = 0.20
+REF_JUMP_GAP_MAX_DISTANCE = 13
+
+REF_JUMP_MIN_DT = 0.004
+REF_JUMP_AIR_MAX_DT = 0.0195
+REF_JUMP_GROUND_MAX_DT = 0.0145
+REF_JUMP_NORMAL_MAX_DT = 0.034
+
+REF_JUMP_MIN_AIR_HSPEED_RATIO = 0.86
+REF_JUMP_MAX_AIR_HSPEED_RATIO = 1.24
+REF_JUMP_MIN_GROUND_HSPEED_RATIO = 0.82
+REF_JUMP_MIN_JUMP_Y_SPEED = 18
+
+REF_JUMP_SMOOTH_PASSES = 3
+REF_JUMP_SMOOTH_NEIGHBOR_MAX_DIST = 6.5
+REF_JUMP_ROT_SMOOTH_LIMIT = math.rad(70)
+
+REF_JUMP_ULTRA_SMOOTH_ENABLED = true
+REF_JUMP_ULTRA_SMOOTH_PASSES = 1
+REF_JUMP_ULTRA_POS_ALPHA = 0.16
+REF_JUMP_ULTRA_Y_ALPHA_AIR = 0.06
+REF_JUMP_ULTRA_ROT_ALPHA = 0.00
+REF_JUMP_ULTRA_MAX_STEP_DIST = 7.5
+
+REF_JUMP_KEEP_MAP_AIR_CONTROL = true
+REF_JUMP_KEEP_ORIGINAL_ROTATION = true
+REF_JUMP_KEEP_ORIGINAL_CITY_DIR = true
+REF_JUMP_MIN_MOTION_SPEED_KEEP = 8
+
+RUN_ANTI_BLING_ENABLED = true
+RUN_ANTI_BLING_MAX_STEP = 2.65
+RUN_ANTI_BLING_MAX_BRIDGE_DISTANCE = 18
+RUN_ANTI_BLING_INSERT_MAX = 10
+RUN_ANTI_BLING_MIN_DT = 0.0085
+RUN_ANTI_BLING_MAX_DT = 0.050
+RUN_ANTI_BLING_SPEED_CAP_MULT = 1.16
+RUN_ANTI_BLING_KEEP_ROTATION = true
+
+RUN_PLAYBACK_VISUAL_GUARD = true
+RUN_PLAYBACK_BIG_GAP_DISTANCE = 6.2
+RUN_PLAYBACK_MAX_VISUAL_STEP = 4.25
+
+function refJumpIsAir(fr)
+    if type(fr) ~= "table" then return false end
+    local st = tostring(fr.states or fr.state or "")
+    if mobileDeltaFrameHasGroundContact(fr) then
+        return false
+    end
+    if fr.jump == true then return true end
+    return st == "Jumping" or st == "Freefall" or st == "FallingDown"
+end
+
+function refJumpIsHardProtected(fr)
+    if type(fr) ~= "table" then return false end
+    if fr.seam == true or fr.cutNext == true then return true end
+    local st = tostring(fr.states or fr.state or "")
+    return st == "Climbing" or st == "Swimming"
+end
+
+function refJumpTime(fr)
+    return tonumber(fr and (fr.times or fr.t)) or 0
+end
+
+function refJumpFlatDirFromPos(a, b)
+    if not a or not b then return nil end
+    local pa = antiKedutPos(a)
+    local pb = antiKedutPos(b)
+    local flat = Vector3.new(pb.X - pa.X, 0, pb.Z - pa.Z)
+    if flat.Magnitude <= 0.001 then return nil end
+    return flat.Unit
+end
+
+function refJumpDirAround(frames, i)
+    local dir = nil
+    if frames[i - 1] and frames[i + 1] then
+        dir = refJumpFlatDirFromPos(frames[i - 1], frames[i + 1])
+    end
+    if not dir and frames[i - 1] then
+        dir = refJumpFlatDirFromPos(frames[i - 1], frames[i])
+    end
+    if not dir and frames[i + 1] then
+        dir = refJumpFlatDirFromPos(frames[i], frames[i + 1])
+    end
+    return dir
+end
+
+function refJumpIsShortGroundGap(frames, xlnp, endIndex, nextAirIndex)
+    if not frames or not frames[xlnp] or not frames[endIndex] or not frames[nextAirIndex] then
+        return false
+    end
+
+    local prevAir = frames[xlnp - 1]
+    local nextAir = frames[nextAirIndex]
+    if not prevAir or not refJumpIsAir(prevAir) or not refJumpIsAir(nextAir) then
+        return false
+    end
+
+    local count = endIndex - xlnp + 1
+    if count <= REF_JUMP_TARGET_GROUND_FRAMES then
+        return false
+    end
+    if count > REF_JUMP_MAX_SCAN_GROUND_FRAMES then
+        return false
+    end
+
+    for k = xlnp, endIndex do
+        if refJumpIsHardProtected(frames[k]) then
+            return false
+        end
+    end
+
+    local gapTime = math.max(0, refJumpTime(nextAir) - refJumpTime(prevAir))
+    local gapDist = antiKedutDist(prevAir, nextAir)
+
+    return gapTime <= REF_JUMP_GAP_MAX_TIME and gapDist <= REF_JUMP_GAP_MAX_DISTANCE
+end
+
+function refJumpSampleGroundBlock(frames, xlnp, endIndex)
+    local count = endIndex - xlnp + 1
+    local wrfa = math.min(count, REF_JUMP_TARGET_GROUND_FRAMES)
+    local selected = {}
+    local mzo = {}
+
+    local function addIndex(idx)
+        idx = math.clamp(math.floor(idx + 0.5), xlnp, endIndex)
+        if not mzo[idx] then
+            mzo[idx] = true
+            table.insert(selected, idx)
+        end
+    end
+
+    if wrfa <= 1 then
+        addIndex(endIndex)
+    else
+        for n = 1, wrfa do
+            local alpha = (n - 1) / math.max(wrfa - 1, 1)
+            addIndex(xlnp + ((count - 1) * alpha))
+        end
+    end
+
+    local bestRot = 0
+    local obu = nil
+    for i = xlnp + 1, endIndex - 1 do
+        local rot = math.max(antiKedutYawDiff(frames[i - 1], frames[i]), antiKedutYawDiff(frames[i], frames[i + 1]))
+        if rot > bestRot then
+            bestRot = rot
+            obu = i
+        end
+    end
+    if obu and bestRot > math.rad(9) and #selected < REF_JUMP_TARGET_GROUND_FRAMES + 1 then
+        addIndex(obu)
+    end
+
+    table.sort(selected)
+
+    local out = {}
+    for _, idx in ipairs(selected) do
+        table.insert(out, deepCopy(frames[idx]))
+    end
+    return out
+end
+
+function refJumpCompressGroundGaps(frames)
+    frames = frames or {}
+    if #frames <= 3 then return frames, 0 end
+
+    local out = {}
+    local removed = 0
+    local i = 1
+
+    while i <= #frames do
+        local fr = frames[i]
+
+        if i > 1 and fr and not refJumpIsAir(fr) and refJumpIsAir(frames[i - 1]) then
+            local xlnp = i
+            local j = i
+            while j <= #frames and frames[j] and not refJumpIsAir(frames[j]) do
+                j = j + 1
+            end
+
+            if j <= #frames and refJumpIsShortGroundGap(frames, xlnp, j - 1, j) then
+                local kept = refJumpSampleGroundBlock(frames, xlnp, j - 1)
+                for _, item in ipairs(kept) do
+                    table.insert(out, item)
+                end
+                removed = removed + ((j - xlnp) - #kept)
+                i = j
+            else
+                table.insert(out, deepCopy(fr))
+                i = i + 1
+            end
+        else
+            table.insert(out, deepCopy(fr))
+            i = i + 1
+        end
+    end
+
+    if #out <= 0 then return frames, removed end
+    return out, removed
+end
+
+function refJumpMarkChain(frames)
+    frames = frames or {}
+    local mark = {}
+    for i, fr in ipairs(frames) do
+        if refJumpIsAir(fr) then
+            mark[i] = true
+        end
+    end
+
+    local i = 1
+    while i <= #frames do
+        if frames[i] and not refJumpIsAir(frames[i]) and i > 1 and refJumpIsAir(frames[i - 1]) then
+            local xlnp = i
+            local j = i
+            while j <= #frames and frames[j] and not refJumpIsAir(frames[j]) do
+                j = j + 1
+            end
+
+            if j <= #frames then
+                local prevAir = frames[xlnp - 1]
+                local nextAir = frames[j]
+                local gapTime = math.max(0, refJumpTime(nextAir) - refJumpTime(prevAir))
+                local gapDist = antiKedutDist(prevAir, nextAir)
+                if gapTime <= REF_JUMP_GAP_MAX_TIME and gapDist <= REF_JUMP_GAP_MAX_DISTANCE then
+                    for k = xlnp, j - 1 do
+                        mark[k] = true
+                    end
+                end
+            end
+            i = j
+        else
+            i = i + 1
+        end
+    end
+
+    return mark
+end
+
+function refJumpSmoothPositions(frames)
+    frames = frames or {}
+    if #frames <= 3 then return frames end
+
+    local out = deepCopy(frames)
+
+    for _ = 1, REF_JUMP_SMOOTH_PASSES do
+        local src = deepCopy(out)
+        local mark = refJumpMarkChain(src)
+
+        for i = 2, #src - 1 do
+            local fr = src[i]
+            local prev = src[i - 1]
+            local nextF = src[i + 1]
+
+            if mark[i] and not refJumpIsHardProtected(fr) and prev and nextF then
+                local d1 = antiKedutDist(prev, fr)
+                local d2 = antiKedutDist(fr, nextF)
+
+                if d1 <= REF_JUMP_SMOOTH_NEIGHBOR_MAX_DIST and d2 <= REF_JUMP_SMOOTH_NEIGHBOR_MAX_DIST then
+                    local pp = antiKedutPos(prev)
+                    local cp = antiKedutPos(fr)
+                    local np = antiKedutPos(nextF)
+                    local sm = (pp * 0.18) + (cp * 0.64) + (np * 0.18)
+
+                    if refJumpIsAir(fr) then
+
+                        local y = cp.Y + ((sm.Y - cp.Y) * 0.18)
+                        out[i].position = vecToTable(Vector3.new(sm.X, y, sm.Z))
+                    else
+
+                        out[i].position = vecToTable(Vector3.new(sm.X, cp.Y, sm.Z))
+                    end
+
+                end
+            end
+        end
+    end
+
+    return out
+end
+
+function refJumpUltraSmoothChains(frames)
+    frames = frames or {}
+    if not REF_JUMP_ULTRA_SMOOTH_ENABLED or #frames <= 4 then
+        return frames
+    end
+
+    local out = deepCopy(frames)
+
+    for _ = 1, REF_JUMP_ULTRA_SMOOTH_PASSES do
+        local src = deepCopy(out)
+        local mark = refJumpMarkChain(src)
+
+        for i = 2, #src - 1 do
+            local fr = src[i]
+            local prev = src[i - 1]
+            local nextF = src[i + 1]
+
+            if mark[i] and fr and prev and nextF and not refJumpIsHardProtected(fr) then
+                local d1 = antiKedutDist(prev, fr)
+                local d2 = antiKedutDist(fr, nextF)
+
+                if d1 <= REF_JUMP_ULTRA_MAX_STEP_DIST and d2 <= REF_JUMP_ULTRA_MAX_STEP_DIST then
+                    local pp = antiKedutPos(prev)
+                    local cp = antiKedutPos(fr)
+                    local np = antiKedutPos(nextF)
+                    local mid = (pp + np) * 0.5
+
+                    local nx = cp.X + ((mid.X - cp.X) * REF_JUMP_ULTRA_POS_ALPHA)
+                    local nz = cp.Z + ((mid.Z - cp.Z) * REF_JUMP_ULTRA_POS_ALPHA)
+                    local ny = cp.Y
+
+                    if refJumpIsAir(fr) then
+                        ny = cp.Y + ((mid.Y - cp.Y) * REF_JUMP_ULTRA_Y_ALPHA_AIR)
+                    end
+
+                    out[i].position = vecToTable(Vector3.new(nx, ny, nz))
+
+                end
+            end
+        end
+    end
+
+    return out
+end
+
+function refJumpRebuildMoveDirectionFromPath(frames)
+
+    return frames or {}
+end
+
+function refJumpMotionDirFromOriginal(fr, fallbackDir)
+    if type(fr) ~= "table" then
+        return fallbackDir, 0
+    end
+
+    local city = antiKedutCity(fr)
+    local cflat = Vector3.new(city.X, 0, city.Z)
+    if cflat.Magnitude >= REF_JUMP_MIN_MOTION_SPEED_KEEP then
+        return cflat.Unit, cflat.Magnitude
+    end
+
+    local md = tableToVec(fr.moveDirection)
+    local mflat = Vector3.new(md.X, 0, md.Z)
+    if mflat.Magnitude >= 0.03 then
+        return mflat.Unit, 0
+    end
+
+    return fallbackDir, 0
+end
+
+function refJumpStabilizeMomentum(frames)
+    frames = frames or {}
+    if #frames <= 1 then return frames end
+
+    local cebj = rp and framesLookMobileDeltaSafe(frames)
+    local base = antiKedutBaseSpeed(frames)
+    local mark = refJumpMarkChain(frames)
+    local out = deepCopy(frames)
+
+    for i, fr in ipairs(out) do
+        if mark[i] and not refJumpIsHardProtected(fr) then
+            local pathDir = refJumpDirAround(out, i)
+            local dir, originalH = refJumpMotionDirFromOriginal(fr, pathDir)
+
+            if dir and dir.Magnitude > 0.01 then
+                local city = antiKedutCity(fr)
+                local hv = Vector3.new(city.X, 0, city.Z).Magnitude
+                local h = math.max(originalH or 0, hv)
+
+                local minRatio = refJumpIsAir(fr) and REF_JUMP_MIN_AIR_HSPEED_RATIO or REF_JUMP_MIN_GROUND_HSPEED_RATIO
+                local minH = math.max(base * minRatio, ANTI_KEDUT_MIN_RUN_SPEED)
+                local maxH = math.max(base * REF_JUMP_MAX_AIR_HSPEED_RATIO, minH)
+
+                if cebj then
+
+                    if h <= 0.05 then
+                        h = math.max(base * 0.72, ANTI_KEDUT_MIN_RUN_SPEED)
+                    elseif h > maxH then
+                        h = math.min(h, maxH)
+                    end
+                else
+                    if h < minH then
+                        h = minH
+                    elseif h > maxH then
+
+                        h = math.min(h, maxH)
+                    end
+                end
+
+                local y = city.Y
+                if refJumpIsAir(fr) then
+                    local st = tostring(fr.states or fr.state or "")
+                    if st == "Jumping" or fr.jump == true then
+
+                        if (not cebj) and y > 0 and y < REF_JUMP_MIN_JUMP_Y_SPEED then
+                            y = REF_JUMP_MIN_JUMP_Y_SPEED
+                        end
+                        fr.jump = true
+                        fr.states = "Jumping"
+                    elseif st == "FallingDown" then
+                        fr.states = "Freefall"
+                    end
+                else
+
+                    y = 0
+                    fr.jump = false
+                    fr.states = "Running"
+                end
+
+                local md = tableToVec(fr.moveDirection)
+                local mflat = Vector3.new(md.X, 0, md.Z)
+                if mflat.Magnitude >= 0.03 then
+                    fr.moveDirection = vecToTable(mflat.Unit)
+                else
+                    fr.moveDirection = vecToTable(dir)
+                end
+
+                fr.city = vecToTable(Vector3.new(dir.X * h, y, dir.Z * h))
+            end
+        end
+    end
+
+    return out
+end
+
+function refJumpCompactTimes(frames)
+    frames = frames or {}
+    if #frames <= 0 then return frames end
+
+    local cebj = rp and framesLookMobileDeltaSafe(frames)
+    local base = antiKedutBaseSpeed(frames)
+    local mark = refJumpMarkChain(frames)
+    local out = {}
+    local t = 0
+
+    for i = 1, #frames do
+        local fr = deepCopy(frames[i])
+
+        if i == 1 then
+            t = 0
+        else
+            local prev = out[#out]
+            local yv = frames[i - 1]
+            local hd = antiKedutHDist(prev, fr)
+            local vd = antiKedutVDist(prev, fr)
+            local d = antiKedutDist(prev, fr)
+            local hv = math.max(antiKedutHSpeed(prev), antiKedutHSpeed(fr), base)
+            local yv = math.max(math.abs(antiKedutCity(prev).Y), math.abs(antiKedutCity(fr).Y), REF_JUMP_MIN_JUMP_Y_SPEED)
+            local rawDt = (tonumber(frames[i].times) or tonumber(frames[i].t) or 0) - (tonumber(yv and (yv.times or yv.t)) or 0)
+            local dt
+
+            if mark[i] or mark[i - 1] or refJumpIsAir(prev) or refJumpIsAir(fr) then
+                local hdt = (hd > 0.005) and (hd / math.max(hv, 1)) or REF_JUMP_MIN_DT
+                local vdt = (vd > 0.005) and (vd / math.max(yv, 1)) or REF_JUMP_MIN_DT
+                dt = math.max(hdt, vdt, REF_JUMP_MIN_DT)
+
+                if cebj then
+
+                    local rawSafe = rawDt > 0 and (rawDt * (zv or 0.85)) or dt
+                    dt = math.max(dt, rawSafe)
+
+                    if refJumpIsAir(prev) or refJumpIsAir(fr) then
+                        dt = math.clamp(dt, vgol or 0.010, f_jr or 0.045)
+                    else
+                        dt = math.clamp(dt, klt or 0.0085, mdld or 0.030)
+                    end
+                else
+                    if refJumpIsAir(prev) or refJumpIsAir(fr) then
+                        dt = math.clamp(dt, REF_JUMP_MIN_DT, REF_JUMP_AIR_MAX_DT)
+                    else
+                        dt = math.clamp(dt, REF_JUMP_MIN_DT, REF_JUMP_GROUND_MAX_DT)
+                    end
+                end
+            else
+                dt = (d > 0.005) and (d / math.max(hv, 1)) or ANTI_KEDUT_MIN_DT
+                if cebj and rawDt > 0 then
+                    dt = math.max(dt, rawDt * (zv or 0.85))
+                    dt = math.clamp(dt, ANTI_KEDUT_MIN_DT, azq or 0.055)
+                else
+                    dt = math.clamp(dt, ANTI_KEDUT_MIN_DT, REF_JUMP_NORMAL_MAX_DT)
+                end
+            end
+
+            t = t + dt
+        end
+
+        fr.times = roundNumber(t, 9)
+        fr.t = fr.times
+        table.insert(out, fr)
+    end
+
+    return out
+end
+
+function runAntiBlingIsRunning(fr)
+    if type(fr) ~= "table" then return false end
+    if refJumpIsAir(fr) or refJumpIsHardProtected(fr) then return false end
+    if fr.jump == true then return false end
+
+    local st = tostring(fr.states or fr.state or "")
+    if st == "" or st == "Running" or st == "Landed" or st == "Walking" or st == "Standing" then
+        return true
+    end
+
+    return false
+end
+
+function runAntiBlingFlatDir(a, b)
+    if not a or not b then return nil end
+    local pa = antiKedutPos(a)
+    local pb = antiKedutPos(b)
+    local flat = Vector3.new(pb.X - pa.X, 0, pb.Z - pa.Z)
+    if flat.Magnitude <= 0.001 then return nil end
+    return flat.Unit
+end
+
+function runAntiBlingBaseSpeedFromPair(a, b, fallback)
+    local speed = math.max(
+        antiKedutHSpeed(a),
+        antiKedutHSpeed(b),
+        tonumber(a and a.jqa) or 0,
+        tonumber(b and b.jqa) or 0,
+        tonumber(fallback) or 0,
+        ANTI_KEDUT_MIN_RUN_SPEED or 8
+    )
+    return math.clamp(speed, ANTI_KEDUT_MIN_RUN_SPEED or 8, slw or 500000)
+end
+
+function runAntiBlingInterpolateFrame(a, b, alpha, f_)
+    local copy = deepCopy((alpha < 0.5 and a) or b)
+    local pa = antiKedutPos(a)
+    local pb = antiKedutPos(b)
+    local pos = pa:Lerp(pb, alpha)
+
+    local yawA = tonumber(a and a.rotation) or 0
+    local yawB = tonumber(b and b.rotation) or yawA
+    local yaw = lerpAngle(yawA, yawB, alpha)
+
+    local dir = runAntiBlingFlatDir(a, b)
+    local speed = runAntiBlingBaseSpeedFromPair(a, b, f_)
+
+    copy.position = vecToTable(pos)
+    copy.rotation = roundNumber(yaw, 9)
+
+    if dir then
+        copy.moveDirection = vecToTable(dir)
+        copy.city = vecToTable(Vector3.new(dir.X * speed, 0, dir.Z * speed))
+    else
+        copy.city = vecToTable(Vector3.new(0, 0, 0))
+    end
+
+    copy.jump = false
+    copy.states = "Running"
+    copy.seam = false
+    copy.cutNext = false
+    copy.ground = nil
+    return copy
+end
+
+function runAntiBlingInsertBridges(frames)
+    frames = frames or {}
+    if not RUN_ANTI_BLING_ENABLED or #frames <= 1 then
+        return frames, 0
+    end
+
+    local base = antiKedutBaseSpeed(frames)
+    local out = {}
+    local added = 0
+
+    for i = 1, #frames do
+        local a = frames[i]
+        table.insert(out, deepCopy(a))
+
+        local b = frames[i + 1]
+        if a and b
+            and runAntiBlingIsRunning(a)
+            and runAntiBlingIsRunning(b)
+            and a.cutNext ~= true
+            and b.seam ~= true
+        then
+            local hd = antiKedutHDist(a, b)
+            local vd = antiKedutVDist(a, b)
+
+            if hd > RUN_ANTI_BLING_MAX_STEP
+                and hd <= RUN_ANTI_BLING_MAX_BRIDGE_DISTANCE
+                and vd <= 1.25
+            then
+                local parts = math.ceil(hd / RUN_ANTI_BLING_MAX_STEP)
+                parts = math.clamp(parts, 2, RUN_ANTI_BLING_INSERT_MAX + 1)
+
+                for n = 1, parts - 1 do
+                    local alpha = n / parts
+                    table.insert(out, runAntiBlingInterpolateFrame(a, b, alpha, base))
+                    added = added + 1
+                end
+            end
+        end
+    end
+
+    return out, added
+end
+
+function runAntiBlingRetuneTimes(frames)
+    frames = frames or {}
+    if not RUN_ANTI_BLING_ENABLED or #frames <= 0 then
+        return frames
+    end
+
+    local base = antiKedutBaseSpeed(frames)
+    local out = {}
+    local t = 0
+
+    for i = 1, #frames do
+        local fr = deepCopy(frames[i])
+        if i == 1 then
+            t = 0
+        else
+            local prevSrc = frames[i - 1]
+            local prevOut = out[#out]
+            local oldDt = (tonumber(fr.times) or tonumber(fr.t) or 0) - (tonumber(prevSrc.times) or tonumber(prevSrc.t) or 0)
+            if oldDt <= 0 then oldDt = iy or 0.004 end
+
+            local dt = oldDt
+
+            if runAntiBlingIsRunning(prevOut) and runAntiBlingIsRunning(fr) then
+                local hd = antiKedutHDist(prevOut, fr)
+                local jon = runAntiBlingBaseSpeedFromPair(prevOut, fr, base) * (RUN_ANTI_BLING_SPEED_CAP_MULT or 1.16)
+                local needDt = (hd > 0.005) and (hd / math.max(jon, 1)) or (RUN_ANTI_BLING_MIN_DT or 0.0085)
+
+                dt = math.max(oldDt, needDt, RUN_ANTI_BLING_MIN_DT or 0.0085)
+                dt = math.clamp(dt, RUN_ANTI_BLING_MIN_DT or 0.0085, RUN_ANTI_BLING_MAX_DT or 0.05)
+            else
+
+                dt = oldDt
+            end
+
+            t = t + dt
+        end
+
+        fr.times = roundNumber(t, 9)
+        fr.t = fr.times
+        table.insert(out, fr)
+    end
+
+    return out
+end
+
+function refJumpOptimizer(frames, compactTime)
+    if not ANTI_KEDUT_REFERENCE_JUMP_ENABLED then
+        if compactTime ~= false then
+            return antiKedutCompactTimes(frames), 0
+        end
+        return frames, 0
+    end
+
+    frames = basicNormalizeFrames(frames) or frames
+    if type(frames) ~= "table" or #frames <= 2 then return frames, 0 end
+
+    local ilhu = 0
+    frames, ilhu = refJumpCompressGroundGaps(frames)
+    frames = refJumpSmoothPositions(frames)
+    frames = refJumpUltraSmoothChains(frames)
+    frames = refJumpStabilizeMomentum(frames)
+
+    if compactTime ~= false then
+        frames = refJumpCompactTimes(frames)
+    end
+
+    frames = refJumpRebuildMoveDirectionFromPath(frames)
+
+    return frames, ilhu
+end
+
+function cleanFramesForSaveMerge(inputFrames, compactTime)
+    local frames = basicNormalizeFrames(inputFrames) or inputFrames
+    if type(frames) ~= "table" or #frames <= 0 then return {}, 0 end
+
+    if rmh and trxt then
+        return prepareRawExactFramesForSave(frames)
+    end
+
+    local before = #frames
+    local removedA = 0
+    local removedB = 0
+    local thv_ = 0
+
+    frames = mobileDeltaFixAirStateByVelocity(frames)
+
+    frames = antiKedutTrimEdges(frames)
+    frames, removedA = antiKedutCleanInternal(frames)
+
+    frames = antiKedutTrimEdges(frames)
+    frames, removedB = antiKedutCleanInternal(frames)
+
+    frames = antiKedutSmoothIdleRotation(frames)
+
+    frames, thv_ = refJumpOptimizer(frames, compactTime)
+
+    local oa = 0
+    frames, oa = runAntiBlingInsertBridges(frames)
+    if compactTime ~= false then
+        frames = runAntiBlingRetuneTimes(frames)
+    end
+
+    local _ey = 0
+    local buyx = nil
+    frames, _ey, buyx = autoMapCleanSpeedForSave(frames)
+
+    local removed = math.max(0, before - #frames)
+        + (tonumber(removedA) or 0)
+        + (tonumber(removedB) or 0)
+        + (tonumber(thv_) or 0)
+
+    return frames, removed
+end
+
+mq = function()
+
+    if not bzg_ or #bzg_ <= 0 then
+        notify("Save", "Belum ada record. Tekan RECORD lalu STOP dulu.", 3)
+        return
+    end
+
+    local name = cleanFileName(dxay and dxay.Text or "")
+
+    if name == "" or name == "checkpoint" then
+        name = getNextDefaultName()
+    end
+
+    local frames, removed = cleanFramesForSaveMerge(bzg_, true)
+
+    if not frames or #frames <= 0 then
+        notify("Save", "Frame kosong setelah clean", 3)
+        return
+    end
+
+    local ok, msg, path = saveFramesToFile(name, frames)
+
+    local added = upsertCheckpoint(name, frames, false, path)
+
+    if wb then
+        task.defer(refreshCheckpointMarkers)
+    end
+
+    bzg_ = {}
+
+    if dxay then
+        dxay.Text = ""
+    end
+
+    if chnu then
+        chnu.Text = ""
+    end
+
+    if yc then
+        yc()
+        task.defer(function()
+            yc()
+        end)
+    end
+
+    if ok then
+        notify("Save", name .. ".json tersimpan | DELTA NO FALSE JUMP | AUTO MAP SPEED | hapus " .. tostring(removed or 0), 3)
+    else
+        notify("Save", name .. " masuk memory. " .. tostring(msg), 4)
+    end
+
+    if not added then
+        notify("Save", "Warning: gagal masuk list checkpoint", 3)
+    end
+end
+
+function loadOneFile(path)
+    local content = readTextFile(path)
+    if not content then
+        return false
+    end
+
+    local decoded = decodeJSON(content)
+    local frames = basicNormalizeFrames(decoded)
+
+    if not frames then
+        return false
+    end
+
+    local fileName = tostring(path):match("([^/\\]+)$") or tostring(path)
+    local name = fileName:gsub("%.json$", "")
+    local isMerged = name == "merged_record" or name:lower():find("merged", 1, true) ~= nil
+
+    upsertCheckpoint(name, frames, isMerged, path)
+    return true
+end
+
+function refreshFromFiles()
+    local files = listSavedFiles()
+
+    if not files then
+        notify("Refresh", "listfiles/readfile tidak tersedia, refresh memory saja", 3)
+        return 0
+    end
+
+    local count = 0
+
+    for _, path in ipairs(files) do
+        local p = tostring(path)
+
+        if p:lower():sub(-5) == ".json" then
+            if loadOneFile(p) then
+                count = count + 1
+            end
+        end
+    end
+
+    refreshCheckpointMarkers()
+    return count
+end
+
+ix = function()
+    local eth_ = 0
+
+    if safeFunc(listfiles) and safeFunc(readfile) then
+        eth_ = refreshFromFiles()
+    end
+
+    local clipFunc = nil
+
+    if safeFunc(getclipboard) then
+        clipFunc = getclipboard
+    elseif safeFunc(readclipboard) then
+        clipFunc = readclipboard
+    end
+
+    if clipFunc then
+        local ok, clip = pcall(function()
+            return clipFunc()
+        end)
+
+        if ok and type(clip) == "string" and #clip > 10 then
+            local decoded = decodeJSON(clip)
+            local frames = basicNormalizeFrames(decoded)
+
+            if frames then
+                local name = getNextDefaultName()
+                upsertCheckpoint(name, frames, false, filePathForName(name))
+                eth_ = eth_ + 1
+                notify("Import", "JSON clipboard masuk sebagai " .. name, 3)
+            end
+        end
+    end
+
+    yc()
+
+    if eth_ > 0 then
+        notify("Load", "Berhasil load " .. tostring(eth_) .. " JSON", 3)
+    else
+        notify("Load", "Tidak ada JSON valid ditemukan", 3)
+    end
+end
+
+_l = function()
+    for _, cp in ipairs(bu) do
+        if cp.path then
+            deleteFile(cp.path)
+        else
+            deleteFile(filePathForName(cp.name))
+        end
+    end
+
+    if safeFunc(listfiles) and safeFunc(delfile) then
+        local files = listSavedFiles()
+
+        if files then
+            for _, path in ipairs(files) do
+                local p = tostring(path)
+
+                if p:lower():sub(-5) == ".json" then
+                    deleteFile(p)
+                end
+            end
+        end
+    end
+
+    bu = {}
+    obr = 1
+    clearMergeDots()
+    clearCheckpointMarkers()
+    yc()
+    notify("Del All", "Semua checkpoint dihapus", 3)
+end
+yc = function()
+    if not iq then
+        return
+    end
+
+    for _, child in ipairs(iq:GetChildren()) do
+        if child:IsA("Frame") or child:IsA("TextButton") then
+            child:Destroy()
+        end
+    end
+
+    local keyword = ""
+    if chnu then
+        keyword = tostring(chnu.Text or ""):lower()
+    end
+
+    table.sort(bu, function(a, b)
+        return (a.order or 9999) < (b.order or 9999)
+    end)
+
+    local shown = 0
+
+    for _, cp in ipairs(bu) do
+        local name = tostring(cp.name or "checkpoint")
+        local acs = 0
+
+        if type(cp.frames) == "table" then
+            acs = #cp.frames
+        end
+
+        local match = keyword == "" or name:lower():find(keyword, 1, true) ~= nil
+
+        if match then
+            shown = shown + 1
+
+            local row = Instance.new("Frame")
+            row.Name = "CheckpointItem_" .. name
+            row.BackgroundColor3 = Color3.fromRGB(24, 24, 34)
+            row.Size = UDim2.new(1, -2, 0, 30)
+            row.LayoutOrder = shown
+            row.Parent = iq
+            addCorner(row, 10)
+            addStroke(row, Color3.fromRGB(70, 70, 95), 0.35)
+
+            local playBtn = Instance.new("TextButton")
+            playBtn.Name = "Play_" .. name
+            playBtn.BackgroundTransparency = 1
+            playBtn.TextColor3 = Color3.fromRGB(245, 245, 255)
+            playBtn.Font = Enum.Font.GothamBold
+            playBtn.TextSize = 9
+            playBtn.TextXAlignment = Enum.TextXAlignment.Left
+            playBtn.Text = name .. " (" .. tostring(acs) .. " frame)"
+            playBtn.Size = UDim2.new(1, -64, 1, 0)
+            playBtn.Position = UDim2.fromOffset(10, 0)
+            playBtn.Parent = row
+
+            local markBtn = Instance.new("TextButton")
+            markBtn.Name = "Marker_" .. name
+            markBtn.BackgroundColor3 = (wb and xu == name)
+                and Color3.fromRGB(55, 120, 80)
+                or Color3.fromRGB(55, 55, 75)
+            markBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+            markBtn.Font = Enum.Font.GothamBold
+            markBtn.TextSize = 9
+            markBtn.Text = (wb and xu == name) and "✓" or "M"
+            markBtn.Size = UDim2.fromOffset(24, 22)
+            markBtn.Position = UDim2.new(1, -56, 0.5, -11)
+            markBtn.Parent = row
+            addCorner(markBtn, 10)
+
+            local delBtn = Instance.new("TextButton")
+            delBtn.Name = "Delete_" .. name
+            delBtn.BackgroundColor3 = Color3.fromRGB(170, 55, 70)
+            delBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+            delBtn.Font = Enum.Font.GothamBold
+            delBtn.TextSize = 10
+            delBtn.Text = "X"
+            delBtn.Size = UDim2.fromOffset(24, 22)
+            delBtn.Position = UDim2.new(1, -28, 0.5, -11)
+            delBtn.Parent = row
+            addCorner(delBtn, 10)
+
+            bindButton(playBtn, function()
+                ky(cp)
+            end)
+
+            bindButton(markBtn, function()
+                toggleSingleCheckpointMarker(cp)
+                yc()
+            end)
+
+            bindButton(delBtn, function()
+
+                if cp.path then
+                    deleteFile(cp.path)
+                else
+                    deleteFile(filePathForName(cp.name))
+                end
+
+                for i = #bu, 1, -1 do
+                    if bu[i] == cp or bu[i].name == cp.name then
+                        table.remove(bu, i)
+                        break
+                    end
+                end
+
+                if wb then
+                    task.defer(refreshCheckpointMarkers)
+                end
+
+                yc()
+                notify("Delete", name .. " dihapus", 2)
+            end)
+        end
+    end
+
+    if iq and fzr then
+        iq.CanvasSize = UDim2.fromOffset(0, fzr.AbsoluteContentSize.Y + 14)
+    end
+end
+
+local janp = true
+local zjv = 1.08
+local vdq = 0.0065
+local zuj = 0.180
+local gm = 1.250
+
+function mergeAntiSpikeFrameTime(fr)
+    return tonumber(fr and fr.times) or tonumber(fr and fr.t) or 0
+end
+
+function mergeAntiSpikePairSpeed(a, b, fallback)
+    local spd = math.max(
+        antiKedutHSpeed(a),
+        antiKedutHSpeed(b),
+        tonumber(a and a.jqa) or 0,
+        tonumber(b and b.jqa) or 0,
+        tonumber(a and a.ws) or 0,
+        tonumber(b and b.ws) or 0,
+        tonumber(fallback) or 0,
+        mpm or 8
+    )
+
+    if spd <= 0 then
+        spd = autoMapDetectNormalRunSpeed({ a, b }) or zudm
+    end
+
+    return math.clamp(spd, mpm or 8, slw or 500000)
+end
+
+function mergeAntiSpikeDistance(a, b)
+    if not a or not b then
+        return 0, 0, 0
+    end
+
+    local pa = antiKedutPos(a)
+    local pb = antiKedutPos(b)
+    local d = pb - pa
+    local hd = Vector3.new(d.X, 0, d.Z).Magnitude
+    local vd = math.abs(d.Y)
+    return d.Magnitude, hd, vd
+end
+
+function estimateMergeJoinDt(js, newFrame, distOverride)
+    if not janp then
+        return pw or 0.004
+    end
+
+    local dist, hd = mergeAntiSpikeDistance(js, newFrame)
+    dist = tonumber(distOverride) or dist or 0
+
+    if dist <= (xil or 0.35) then
+        return pw or 0.004
+    end
+
+    local f_ = mergeAntiSpikePairSpeed(js, newFrame, nil)
+    local jon = math.max(f_ * (zjv or 1.08), 1)
+    local needDt = math.max(dist, hd or 0) / jon
+
+    return math.clamp(needDt, vdq or 0.0065, gm or 1.25)
+end
+
+function mergeAntiSpikeRetuneTimes(frames)
+    if not janp then
+        return frames
+    end
+
+    frames = basicNormalizeFrames(frames) or frames or {}
+    if #frames <= 1 then
+        return frames
+    end
+
+    local f_ = autoMapDetectNormalRunSpeed(frames) or antiKedutBaseSpeed(frames) or zudm
+    local out = {}
+    local t = 0
+
+    for i, src in ipairs(frames) do
+        local fr = deepCopy(src)
+
+        if i == 1 then
+            t = 0
+        else
+            local prevSrc = frames[i - 1]
+            local prevOut = out[#out]
+            local rawDt = mergeAntiSpikeFrameTime(src) - mergeAntiSpikeFrameTime(prevSrc)
+            local dt = rawDt
+            local dist, hd, vd = mergeAntiSpikeDistance(prevOut, fr)
+            local isJoin = fr.__mergeJoin == true
+            local isRunGap = runAntiBlingIsRunning(prevOut) and runAntiBlingIsRunning(fr)
+
+            if dt <= 0 then
+                dt = vdq or 0.0065
+            end
+
+            if (isJoin or isRunGap) and dist > 0.005 then
+                local _nes = mergeAntiSpikePairSpeed(prevOut, fr, f_)
+                local jon = math.max(_nes * (zjv or 1.08), 1)
+                local needDt = hd / jon
+
+                if isJoin then
+                    needDt = math.max(needDt, dist / jon)
+                end
+
+                if dt < needDt then
+                    dt = needDt
+                end
+
+                if isJoin then
+                    dt = math.min(dt, math.max(gm or 1.25, needDt))
+                elseif vd <= 1.5 then
+                    dt = math.min(dt, math.max(zuj or 0.18, needDt))
+                end
+            end
+
+            dt = math.max(dt, vdq or 0.0065)
+            t = t + dt
+        end
+
+        fr.times = roundNumber(t, 9)
+        fr.t = fr.times
+        table.insert(out, fr)
+    end
+
+    return out
+end
+
+zkk = function()
+    local normal = {}
+
+    for _, cp in ipairs(bu) do
+        if not cp.isMerged and cp.frames and #cp.frames > 0 then
+            table.insert(normal, cp)
+        end
+    end
+
+    if #normal <= 0 then
+        notify("Merge", "Tidak ada checkpoint untuk digabung", 3)
+        return
+    end
+
+    table.sort(normal, function(a, b)
+        return (a.order or 9999) < (b.order or 9999)
+    end)
+
+    local merged = {}
+    local yk_ = 0
+    local cutJoin = 0
+    local uy = 0
+    local r_ = 0
+    local js = nil
+
+    clearMergeDots()
+
+    for _, cp in ipairs(normal) do
+        local frames, removed = cleanFramesForSaveMerge(cp.frames, true)
+        uy = uy + (removed or 0)
+
+        if frames and #frames > 0 then
+            yk_ = yk_ + 1
+
+            frames = trimIdleStartEnd(frames)
+            frames = compactCleanTimes(frames)
+
+            local firstT = tonumber(frames[1].times) or tonumber(frames[1].t) or 0
+            local mz = 0
+
+            for i = 1, #frames do
+                local newFrame = deepCopy(frames[i])
+                local rawT = tonumber(newFrame.times) or tonumber(newFrame.t) or 0
+                local localT = rawT - firstT
+
+                if i > 1 and localT <= mz then
+                    localT = mz + pw
+                end
+
+                if js and i == 1 then
+                    createMergeDotPath(
+                        yk_,
+                        cp.name or ("checkpoint_" .. tostring(yk_)),
+                        tableToVec(js.position),
+                        tableToVec(newFrame.position)
+                    )
+
+                    local dist = (tableToVec(newFrame.position) - tableToVec(js.position)).Magnitude
+                    newFrame.__mergeJoin = true
+                    newFrame.__mergeJoinDistance = roundNumber(dist, 9)
+
+                    local prevTime = tonumber(js.times) or tonumber(js.t) or (r_ - (pw or 0.004))
+                    local joinDt = estimateMergeJoinDt(js, newFrame, dist)
+                    r_ = prevTime + math.max(joinDt, pw or 0.004)
+                    localT = 0
+
+                    if dist > vqo then
+
+                        newFrame.seam = true
+                        cutJoin = cutJoin + 1
+                    else
+
+                        newFrame.seam = false
+                        newFrame.cutNext = false
+                    end
+                end
+
+                newFrame.times = roundNumber(r_ + localT, 9)
+                newFrame.t = newFrame.times
+
+                table.insert(merged, newFrame)
+                js = newFrame
+                mz = localT
+            end
+
+            r_ = (tonumber(merged[#merged].times) or r_) + pw
+        end
+    end
+
+    if #merged <= 0 then
+        notify("Merge", "Merge gagal, frame kosong", 3)
+        return
+    end
+
+    merged = cleanFramesForSaveMerge(merged, true)
+
+    merged = mergeAntiSpikeRetuneTimes(merged)
+
+    local ok, msg, path = saveFramesToFile("merged_record", merged)
+    upsertCheckpoint("merged_record", merged, true, path)
+
+    if wb then
+        task.defer(refreshCheckpointMarkers)
+    end
+
+    local dotCount = countMergeDots()
+
+    if ok then
+        notify(
+            "Merge",
+            "merged_record bersih: " .. tostring(yk_)
+                .. " file | hapus " .. tostring(uy)
+                .. " idle/kedut | cut " .. tostring(cutJoin)
+                .. " | titik " .. tostring(dotCount),
+            4
+        )
+    else
+        notify("Merge", "Merge masuk memory. " .. tostring(msg) .. " | titik " .. tostring(dotCount), 4)
+    end
+end
+
+bindButton(z_t, function()
+
+    local ddlg = true
+    local feof = false
+
+    pcall(function()
+        local Players = game:GetService("Players")
+        local lp = Players.LocalPlayer
+        local char = lp and lp.Character
+        if char then
+            local hum = char:FindFirstChildOfClass("Humanoid")
+            local hrp = char:FindFirstChild("HumanoidRootPart")
+            if hum then
+
+                feof = (hum.AutoRotate == false)
+
+                hum.Jump = false
+                hum.PlatformStand = false
+                hum.AutoRotate = true
+                local stName = tostring(hum:GetState().Name or "")
+                if stName == "Freefall" or stName == "Jumping" or stName == "FallingDown" then
+                    ddlg = false
+                end
+                pcall(function()
+                    hum:ChangeState(Enum.HumanoidStateType.Running)
+                end)
+            end
+            if hrp then
+                hrp.AssemblyLinearVelocity = Vector3.zero
+                hrp.AssemblyAngularVelocity = Vector3.zero
+            end
+        end
+    end)
+
+    local waitTime = feof and 0.18 or 0.05
+    task.wait(waitTime)
+    brd()
+
+    pcall(function()
+        local RunService = game:GetService("RunService")
+        local Players = game:GetService("Players")
+        local lp = Players.LocalPlayer
+        local ji = feof and 0.65 or 0.35
+        local zfjf = os.clock() + ji
+        local conn
+        conn = addConnection(RunService.Heartbeat:Connect(function()
+            if os.clock() >= zfjf or not zd then
+                if conn then conn:Disconnect() conn = nil end
+                return
+            end
+            local char = lp and lp.Character
+            if not char then return end
+            local hum = char:FindFirstChildOfClass("Humanoid")
+            local hrp = char:FindFirstChild("HumanoidRootPart")
+            if hum then
+                if hum.Jump then hum.Jump = false end
+                local stName = tostring(hum:GetState().Name or "")
+                if ddlg and (stName == "Jumping" or stName == "Freefall") then
+                    pcall(function()
+                        hum:ChangeState(Enum.HumanoidStateType.Running)
+                    end)
+                end
+            end
+            if hrp and ddlg then
+                local v = hrp.AssemblyLinearVelocity
+                if v.Y > 0 then
+                    hrp.AssemblyLinearVelocity = Vector3.new(v.X, 0, v.Z)
+                end
+            end
+        end))
+    end)
+end)
+
+bindButton(_dqf, function()
+    setSpeedFromCurrent()
+end)
+
+bindButton(eggg, function()
+    wf(true)
+end)
+
+bindButton(SaveBtn, function()
+    mq()
+end)
+
+bindButton(fqh, function()
+    toggleCheckpointMarkersAll()
+    yc()
+end)
+
+bindButton(utr, function()
+    _l()
+end)
+
+bindButton(ozd, function()
+    ix()
+end)
+
+bindButton(w_ct, function()
+    local count = refreshFromFiles()
+    yc()
+    notify("Refresh", "Refresh selesai. File terbaca: " .. tostring(count), 3)
+end)
+
+bindButton(MergeBtn, function()
+    zkk()
+end)
+
+addConnection(chnu:GetPropertyChangedSignal("Text"):Connect(function()
+    yc()
+end))
+
+addConnection(speedBox.FocusLost:Connect(function()
+    local raw = tostring(speedBox and speedBox.Text or "")
+    raw = raw:gsub(",", ".")
+    raw = raw:gsub("^%s+", "")
+    raw = raw:gsub("%s+$", "")
+
+    if raw == "" or raw:lower() == "auto" then
+        if speedBox then
+            speedBox.Text = "AUTO"
+        end
+        notify("Speed", "AUTO MAP aktif. Playback ikut speed asli JSON/map.", 2)
+        return
+    end
+
+    local spd = setSyncBaseSpeed(raw, true)
+    notify("Speed", "MANUAL speed: " .. tostring(spd) .. " stud/s", 2)
+end))
+
+bindButton(StopBtn, function()
+    le()
+end)
+
+bindButton(qpw, function()
+    on()
+end)
+
+bindButton(MinBtn, function()
+    _px.Visible = false
+    MiniLogo.Visible = true
+end)
+
+bindButton(MiniLogo, function()
+    MiniLogo.Visible = false
+    _px.Visible = true
+end)
+
+bindButton(CloseBtn, function()
+    cleanup()
+end)
+
+if yc then
+    yc()
+end
+
+task.spawn(function()
+    task.wait(0.5)
+
+    ensureFolder()
+
+    if safeFunc(listfiles) and safeFunc(readfile) then
+        local count = refreshFromFiles()
+
+        if yc then
+            yc()
+        end
+
+        if count > 0 then
+            notify("ONIUM Recorder", "Auto load " .. tostring(count) .. " JSON", 3)
+        else
+            notify("ONIUM Recorder", "Siap digunakan", 2)
+        end
+    else
+        notify("ONIUM Recorder", "Siap. File API tidak lengkap, memory mode aktif.", 4)
+    end
+end)
